@@ -70,4 +70,6 @@ nav:
     - Section 1:
       - Doc 3: get-started/section-1/doc3.md
       - Doc 4: get-started/section-1/doc4.md
+  - Blog:
+    - What is DocOps?: blog/doc-ops.md
 

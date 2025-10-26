@@ -1,0 +1,73 @@
+
+site_name: Engineer The Docs
+site_url: https://sitename.example
+extra_css:
+  - stylesheets/custom.css
+
+# Theme  
+theme:
+  name: material
+  features:
+    #- navigation.sections
+    #- navigation.expand
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.path
+    - content.code.copy
+  font:
+    text: Raleway
+    code: Roboto Mono  
+  favicon: assets/favicon.png
+  logo: assets/favicon.png
+  palette:
+  # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+
+  # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+# Extensions
+markdown_extensions:
+  # Code syntax highlighter, uses Pygments
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      linenums: true
+  #Inline code syntax highlighter
+  - pymdownx.inlinehilite    
+  - codehilite:
+      guess_lang: false
+      pygments_style: github-light
+  # Admonitions (call-outs)
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  # Tables
+  - tables
+  
+
+# Navigation
+nav:
+  - Home: index.md
+  - Information architecture: information-architecture.md
+  - Get started:
+    - get-started/index.md
+    - Installation: get-started/installation.md
+    - Doc 1: get-started/doc-1.md
+    - Create your first Docker Container: get-started/create-docker-container.md
+    - Section 1:
+      - Doc 3: get-started/section-1/doc3.md
+      - Doc 4: get-started/section-1/doc4.md
+

@@ -1,0 +1,102 @@
+/* Custom colors for light mode */
+:root {
+  /* Page background */
+  --md-default-bg-color: #e3e3e4;
+  
+  /* Primary color for header, sidebar, etc. */
+  --md-primary-fg-color: #00337C;
+
+  /* Accent color for links, buttons, etc. */
+  --md-accent-fg-color: #FFB700;
+  
+  /* Link hover */
+  --md-typeset-a-color: #FFB700;
+}
+:root a:hover {
+  color: #FFB700;
+}
+
+/*Force page background in light mode */
+:root,
+.md-container,
+.md-main,
+.md-main__inner,
+.md-content,
+.md-content__inner {
+  background-color: var(--md-default-bg-color) !important;
+}
+
+/* Custom colors for dark mode, applied via a media query */
+[data-md-color-scheme="slate"] {
+  /* Backgrounds */
+  --md-default-bg-color: #00337C;
+
+  /* Primary color */
+  --md-primary-fg-color: #FFB700;
+
+  /* Accent color */
+  --md-accent-fg-color: #F1E9DB;
+
+  /* Link hover */
+  --md-typeset-color: #fafafa;
+}
+[data-md-color-scheme="slate"] a:hover {
+  color: #ffffff;
+}
+
+/* Custom hero */
+.hero-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2em;
+}
+.hero-content {
+  flex: 1;
+  padding-right: 2em;
+}
+.hero-image {
+  flex: 1;
+  max-width: 50%;
+}
+
+/* Card grid */
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem; /* Adjust space between cards */
+  margin: 2rem 0;
+}
+
+.card {
+  flex: 1 1 calc(50% - 1.5rem); /* Two cards per row */
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: background-color 0.25s, border-color 0.25s;
+}
+
+.card:hover {
+  background-color: var(--md-default-bg-color);
+  border-color: var(--md-accent-fg-color);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--md-default-fg-color);
+  margin-bottom: 0.5rem;
+}
+
+.card-description {
+  color: var(--md-default-fg-color--light);
+}
+
+/* Adjust for smaller screens */
+@media screen and (max-width: 768px) {
+  .card {
+    flex: 1 1 100%; /* Single card per row on smaller screens */
+  }
+}

@@ -8,7 +8,7 @@ summary: "An introduction to DocOps and how technical writers can evolve into do
 ---
 # DocOps, docs-as-code, and docs engineers: Or, how I learned to stop worrying and love the pipeline
 
-As I was knee-deep in Docker containers, GitHub Actions, and the thrilling mystery of “why won't this deploy,” I realized I still didn¡t fully understand how documentation engineering, Docs-as-Code, and DocOps all fit together (or what skills I could build on as a technical writer expanding into a more technical role). So, I did some non-exhaustive research (read: fell down several documentation rabbit holes), had several philosophical chats with ChatGPT, and voilà: here are my notes, cleaned up just enough to share with future me… and now, with you.
+As I was knee-deep in Docker containers, GitHub Actions, and the thrilling mystery of “why won't this deploy,” I realized I still didn't fully understand how documentation engineering, docs-as-code, and DocOps all fit together or what skills I could build on as a technical writer expanding into a more technical role. So, I did some non-exhaustive research (read: fell down several blog post rabbit holes), had a philosophical chat with ChatGPT, and voilà: here are my notes, cleaned up just enough to share with future me… and now, with you.
 
 ## What is DocOps?
 
@@ -20,17 +20,17 @@ The core principles of DocOps are:
 
 - Collaboration: Docs are created and maintained by cross-functional teams (developers, writers, support, etc.)  
 - Automation: Tools like CI/CD pipelines, static site generators, and version control automate doc updates, publishing, and testing.  
-- Integration: Docs are treated as part of the product lifecycle, not an afterthought, they’re versioned, reviewed, and deployed alongside code.  
+- Integration: Docs are treated as part of the product lifecycle, not an afterthought; they’re versioned, reviewed, and deployed alongside code.  
 - User-centricity: Docs are continuously improved based on user feedback and analytics.
 
-Because of its close relationship to DevOps, DocOps typically relies on a Docs-as-Code approach. It automates publishing, testing, and deployment through continuous integration and delivery (CI/CD) pipelines.
+Because of its close relationship to DevOps, DocOps typically relies on a docs-as-code approach. It automates publishing, testing, and deployment through continuous integration and delivery (CI/CD) pipelines.
 
 Practicing DocOps means getting comfortable with version control, markup languages, scripting, static site generators, Docker containers, and linters. The person who keeps this chaos functional is often called a documentation engineer (or docs engineer for short).
 
 In short:  
 DocOps is to documentation what DevOps is to software delivery (but with less Python and more Markdown).
 
-## Why DocOps matters
+## Why DocOps matters?
 
 DocOps helps teams ship documentation as quickly and reliably as they ship code. It reduces manual work, keeps docs in sync with fast-moving products, and prevents the dreaded “outdated since last quarter” problem.
 
@@ -51,7 +51,7 @@ A documentation engineer is a technical professional who applies software engine
 - Tooling: Develop or customize static site generators (e.g., Docusaurus, Hugo, MkDocs, Sphinx).  
 - Integration: Connect docs with codebases, APIs, SDKs, or product UIs so that docs update automatically. Or at least "less manual than before." 
 - Content delivery: Implement search, localization, and versioning systems. 
-- Data and metrics: Collect analytics on documentation usage and performance. Then quietly question your life choices when analytics show that everyone ignores your “Getting Started” guide.  
+- Data and metrics: Collect analytics on documentation usage and performance. Then quietly question your life choices when analytics show that everyone ignores your “Getting started” guide.  
 - Docs as code: Maintain repositories and ensure docs follow code-like workflows (linting, testing, reviews).
 
 In short, a documentation engineer bridges the gap between technical writing and software development, making documentation more reliable, maintainable, and developer-friendly.
@@ -70,7 +70,7 @@ That perspective aligns naturally with DocOps thinking. Technical writers alread
 
 Becoming a documentation engineer isn’t about leaving writing behind. It’s about expanding your influence from crafting words to engineering the frameworks and architectures that sustain those words at scale. Eventually, you realize you’re spending less time editing sentences and more time debugging build logs at 2 a.m. 👩‍💻
 
-Somewhere along the way, you evolve from “wordsmith” to “accidental DevOps intern." You still get to complain about Oxford, but now you do it while configuring Docker. Congratulations.🎉
+Somewhere along the way, you evolve from “wordsmith” to “accidental DevOps intern." You still get to complain about Oxford commas, but now you do it while configuring Docker. Congratulations.🎉
 
 ## The information architecture connection
 

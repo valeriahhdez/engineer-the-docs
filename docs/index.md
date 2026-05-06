@@ -1,17 +1,45 @@
-# Welcome to MkDocs
+---
+hide:
+  - navigation
+  - toc
+---
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
 
-## Commands
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+<div class="hero-container">
+  <div class="hero-content">
+    <h1>Engineer the docs</h1>
+    <p>Discover how technical writing evolves into documentation engineering. Find practical insights, hands-on experiments, and lessons learned along the journey.</p>
+    <a href="{url}" class="md-button">Start your journey</a>
+  </div>
+  <div class="hero-image">
+    <img src="assets/images/logo.png" alt="Brand identity visual">
+  </div>
+</div>
+
+<h2>Explore resources</h2>
+<div class="card-grid">
+  <a href="path/to/api/page.md" class="card">
+    <img src="path/to/your/api-image.svg" alt="API card image">
+    <div class="card-content">
+      <div class="card-title">New to docs-as-code?</div>
+      <div class="card-description">Start your journey with docs-as-code</div>
+    </div>
+  </a>
+  <a href="path/to/custom-apps/page.md" class="card">
+    <img src="path/to/your/custom-apps-image.svg" alt="Custom Apps card image">
+    <div class="card-content">
+      <div class="card-title">Build your docs pipeline</div>
+      <div class="card-description">Learn how to add quality gates and automate docs tasks.</div>
+    </div>
+  </a>
+</div>
 
 ## Project layout
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+```yaml title="mkdocs.yml"
+    site_name: My MkDocs Material Documentation
+    site_url: https://sitename.example
+    theme:
+        name: material
+```

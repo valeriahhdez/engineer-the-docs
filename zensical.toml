@@ -2,6 +2,36 @@
 site_name = "Engineer the docs"
 extra_css = ["assets/stylesheets/custom.css"]
 
+# Navigation
+nav = [
+    { "Home" = "index.md" },
+    { "Introduction"= [
+        {"What is DaC?" = "introduction/overview-dac.md" }
+    ]}
+] 
+    # { "Get started" = [
+    #     {},
+    #     {},
+    #     {}
+    # ]},
+    # {"Information architecture" = [
+    #     {},
+    #     {}
+    # ]},
+    # {"Quality checks" = [
+    #     {},
+    #     {}
+    # ]},
+    # {"AgenticOps" = [
+    #     {},
+    #     {}  
+    # ]},
+    # {"Docs observability" = [
+    #     {},
+    #     {}  
+    # ]}
+
+
 [project.theme]
 language = "en"
 features = [
@@ -26,9 +56,3 @@ media = "(prefers-color-scheme: dark)"
 scheme = "slate"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
-
-# Navigation
-nav = [
-    { "Home" = "index.md" },
-    { "DaC overview"= "overview-dac.md" }
-]

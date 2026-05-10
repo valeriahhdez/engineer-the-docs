@@ -5,8 +5,8 @@ extra_css = ["assets/stylesheets/custom.css"]
 # Navigation
 nav = [
     { "Home" = "index.md" },
-    { "Introduction"= [
-        {"What is DaC?" = "introduction/overview-dac.md" }
+    { "DocEng fundamentals"= [
+        {"Docs as code, DocOps, and docs engineering" = "introduction/overview-dac.md" }
     ]}
 ] 
     # { "Get started" = [
@@ -18,7 +18,7 @@ nav = [
     #     {},
     #     {}
     # ]},
-    # {"Quality checks" = [
+    # {"Quality gates" = [
     #     {},
     #     {}
     # ]},

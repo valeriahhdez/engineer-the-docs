@@ -32,20 +32,20 @@ The quality gate runs before a human reviewer ever looks at the content. That ch
 
 DocOps is not optional overhead on top of DaC. It is what makes docs as code sustainable. Without automation, the DaC workflow is just more steps. DocOps is the operational layer that convert those steps into a system.
 
-## Docs engineer (DocEng): The owner
+## Docs engineering: The implementation layer
 
-A docs engineer (DocsEng) is not a writing role that uses Git. It is an engineering role that happens to own documentation infrastructure. 
+A docs engineering is not a writing role that uses Git. It is an engineering role that happens to own documentation infrastructure. 
 
-These are some tasks a DocsEng owns:
+A docs engineer owns these tasks:
 
 - Configures CI/CD pipelines.
 - Writes Vale style rules.
 - Builds custom MkDocs plugins.
 - Integrates documentation tooling into developer workflows.
 
-DocsEngs thinks about the documentation platform the way a platform engineer thinks about infrastructure: as a system that other people depend on and that needs to be reliable, maintainable, and extensible.
+Docs engineers think about the documentation platform the way a platform engineer thinks about infrastructure: as a system that other people depend on and that needs to be reliable, maintainable, and extensible.
 
-The skill profile reflects this. A DocEng needs technical writing fluency but they also need enough engineering capability to own a pipeline, debug a failed build, write a GitHub Actions workflow, and make architectural decisions about the toolchain. The role sits at the intersection of engineering and tech writing. But it is a different job than either pure technical writing or pure software engineering.
+The skill profile reflects this. A docs engineer needs technical writing fluency and enough engineering capability to own a pipeline, debug a failed build, write a GitHub Actions workflow, and make architectural decisions about the toolchain. The role sits at the intersection of engineering and tech writing. But it is a different job than either pure technical writing or pure software engineering.
 
 ## How these concepts are related
 
@@ -59,6 +59,6 @@ A team early in the transition typically starts with docs as code: pick a static
 
 As the workflow matures, the DocOps layer gets added incrementally. A basic CI check that runs Vale on pull requests. A link checker that runs on merge. A deployment pipeline that publishes automatically on push to main. Each addition extends the system's ability to maintain quality at scale without increasing the review burden on individual humans.
 
-The docs engineering function emerges — either as a dedicated role or as a responsibility distributed across a team — when the platform itself becomes a thing that needs maintenance and development. Someone has to own the Vale rule set and update it when the style guide changes. Someone has to update the  plugins when a dependency breaks. Someone has to think about whether the toolchain is still the right toolchain as the documentation grows.
+The docs engineering function emerges as a dedicated role or as a responsibility distributed across a team when the platform itself becomes a thing that needs maintenance and development. Someone has to own the Vale rule set and update it when the style guide changes. Someone has to update the  plugins when a dependency breaks. Someone has to think about whether the toolchain is still the right toolchain as the documentation grows.
 
 That ownership is what docs engineering describes: not just using the tools, but being responsible for them.

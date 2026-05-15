@@ -1,19 +1,34 @@
-/* Custom colors for light mode */
+/* ============================================================
+   LIGHT MODE — Custom color overrides
+   Applied to all pages by default (`:root` = the whole page).
+   Material for MkDocs uses CSS variables prefixed with `--md-`
+   so you can override its built-in colors here without touching
+   the theme source files.
+   ============================================================ */
 :root {
-  /* Page background */
-  --md-default-bg-color: #e3e3e4;
+  /* The main background color for the page body.
+     Material uses this for the content area, the nav drawer,
+     and any surface that isn't explicitly colored otherwise. */
+  --md-default-bg-color: #F0F4F8;
   
-  /* Primary color for header, sidebar, etc. */
-  --md-primary-fg-color: #00337C;
+  /* The "primary" brand color. Material applies this to the
+     top header bar, the sidebar/nav active states, and any
+     component marked as primary (e.g. the hamburger menu icon,
+     active tab underlines). */
+  --md-primary-fg-color: #0D1B2A;
 
-  /* Accent color for links, buttons, etc. */
-  --md-accent-fg-color: #FFB700;
+  /* The "accent" brand color. Material uses this for interactive
+     highlights: focused inputs, selected checkboxes, hover
+     states on nav items, and inline code backgrounds. */
+  --md-accent-fg-color: #0099A8;
   
-  /* Link hover */
-  --md-typeset-a-color: #FFB700;
+  /* Controls the color of `<a>` link text in the content body
+     (the typeset area). Separate from the accent because you
+     may want links to be a different shade than other accents. */
+  --md-typeset-a-color: #0099A8;
 }
 :root a:hover {
-  color: #FFB700;
+  color: #007A88;
 }
 
 /*Force page background in light mode */
@@ -26,25 +41,42 @@
   background-color: var(--md-default-bg-color) !important;
 }
 
-/* Custom colors for dark mode, applied via a media query */
+/* ============================================================
+DARK MODE — "slate" scheme overrides
+============================================================ */
 [data-md-color-scheme="slate"] {
-  /* Backgrounds */
-  --md-default-bg-color: #00337C;
+  /* Deep Navy page background */
+  --md-default-bg-color: #0D1B2A;
 
-  /* Primary color */
-  --md-primary-fg-color: #FFB700;
+  /* Navy Surface for header bar and active nav states.
+  Using a slightly lighter navy here rather than the Electric
+  Teal keeps the header from feeling too loud. */  
+  --md-primary-fg-color: #152234;
 
-  /* Accent color */
-  --md-accent-fg-color: #F1E9DB;
+  /* Electric Teal for interactive highlights */
+  --md-accent-fg-color: #00E5C4;
 
-  /* Link hover */
-  --md-typeset-color: #fafafa;
+  /* Electric Teal for body link text */
+  --md-typeset-a-color: #00E5C4;
 }
+/* Link hover uses the pressed teal shade */
 [data-md-color-scheme="slate"] a:hover {
-  color: #ffffff;
+  color: #00B39A;
 }
 
-/* Custom hero */
+/* Force Deep Navy background across all major layout containers */
+[data-md-color-scheme="slate"],
+[data-md-color-scheme="slate"] .md-container,
+[data-md-color-scheme="slate"] .md-main,
+[data-md-color-scheme="slate"] .md-main__inner,
+[data-md-color-scheme="slate"] .md-content,
+[data-md-color-scheme="slate"] .md-content__inner {
+  background-color: var(--md-default-bg-color) !important;
+}
+
+/* ============================================================
+   HERO SECTION — unchanged
+   ============================================================ */
 .hero-container {
   display: flex;
   align-items: center;
@@ -60,7 +92,9 @@
   max-width: 30%;
 }
 
-/* Card grid */
+/* ============================================================
+   CARD GRID
+   ============================================================ */
 .card-grid {
   display: flex;
   flex-wrap: wrap;

@@ -43,6 +43,9 @@ features = [
     "search.highlight",
 ]
 
+[markdown_extensions]
+attr_list = true
+
 # Light mode
 [[project.theme.palette]]
 media = "(prefers-color-scheme: light)"

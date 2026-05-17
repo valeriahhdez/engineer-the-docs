@@ -1,29 +1,23 @@
 /* ============================================================
    LIGHT MODE — Custom color overrides
    Applied to all pages by default (`:root` = the whole page).
-   Material for MkDocs uses CSS variables prefixed with `--md-`
-   so you can override its built-in colors here without touching
+   CSS variables prefixed with `--md-` can override built-in colors without touching
    the theme source files.
    ============================================================ */
 :root {
   /* The main background color for the page body.
-     Material uses this for the content area, the nav drawer,
-     and any surface that isn't explicitly colored otherwise. */
+     For the content area, the nav drawer, and any surface that isn't explicitly colored otherwise. */
   --md-default-bg-color: #F0F4F8;
   
-  /* The "primary" brand color. Material applies this to the
-     top header bar, the sidebar/nav active states, and any
-     component marked as primary (e.g. the hamburger menu icon,
-     active tab underlines). */
+  /* The "primary" brand color: top header bar, the sidebar/nav active states, and any
+     component marked as primary (e.g. the hamburger menu icon, active tab underlines). */
   --md-primary-fg-color: #0D1B2A;
 
-  /* The "accent" brand color. Material uses this for interactive
-     highlights: focused inputs, selected checkboxes, hover
+  /* The "accent" brand color: interactive highlights like focused inputs, selected checkboxes, hover
      states on nav items, and inline code backgrounds. */
   --md-accent-fg-color: #0099A8;
   
-  /* Controls the color of `<a>` link text in the content body
-     (the typeset area). Separate from the accent because you
+  /* Controls the color of `<a>` link text in the content body (the typeset area). Separate from the accent because you
      may want links to be a different shade than other accents. */
   --md-typeset-a-color: #0099A8;
 }
@@ -75,7 +69,7 @@ DARK MODE — "slate" scheme overrides
 }
 
 /* ============================================================
-   HERO SECTION — unchanged
+   HERO SECTION
    ============================================================ */
 .hero-container {
   display: flex;
@@ -94,7 +88,7 @@ DARK MODE — "slate" scheme overrides
 
 /* ============================================================
    CARD GRID
-   ============================================================ */
+============================================================ */
 .card-grid {
   display: flex;
   flex-wrap: wrap;
@@ -133,4 +127,10 @@ DARK MODE — "slate" scheme overrides
   .card {
     flex: 1 1 100%; /* Single card per row on smaller screens */
   }
+}
+/* ============================================================
+   ROUNDED IMAGES
+============================================================ */
+img.rounded {
+  border-radius: 8px;
 }

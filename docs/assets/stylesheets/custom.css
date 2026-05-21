@@ -121,6 +121,13 @@ DARK MODE — "slate" scheme overrides
 .card-description {
   color: var(--md-default-fg-color--light);
 }
+/* Remove MkDocs Material default underlines from custom cards */
+.card .card-title,
+.card .card-description,
+.card a,
+.card-grid a {
+  text-decoration: none !important;
+}
 
 /* Adjust for smaller screens */
 @media screen and (max-width: 768px) {

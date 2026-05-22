@@ -21,8 +21,8 @@ hide:
 <h2>Explore resources</h2>
 <div class="card-grid">
   <a href="path/to/api/page.md" class="card">
-    <img src="assets/images/icons/play-circle-dark.svg" alt="Play symbol card image">
-    <img src="assets/images/icons/play-circle-light.svg" alt="Play symbol card image">
+    <img src="assets/images/icons/play-circle-dark.svg" class="card-icon icon-dark" alt="Play symbol card image">
+    <img src="assets/images/icons/play-circle-light.svg" class="card-icon icon-light" alt="Play symbol card image">
     <div class="card-content">
       <div class="card-title">New to docs engineering?</div>
       <div class="card-description">Learn the fundamentals of docs enginering, docs as code, and DocOps.</div>

@@ -3,7 +3,7 @@
    Applied to all pages by default (`:root` = the whole page).
    CSS variables prefixed with `--md-` can override built-in colors without touching
    the theme source files.
-   ============================================================ */
+============================================================ */
 :root {
   /* The main background color for the page body.
      For the content area, the nav drawer, and any surface that isn't explicitly colored otherwise. */
@@ -36,7 +36,7 @@
 }
 
 /* ============================================================
-DARK MODE — "slate" scheme overrides
+  DARK MODE — "slate" scheme overrides
 ============================================================ */
 [data-md-color-scheme="slate"] {
   /* Deep Navy page background */
@@ -69,8 +69,8 @@ DARK MODE — "slate" scheme overrides
 }
 
 /* ============================================================
-   HERO SECTION
-   ============================================================ */
+  HERO SECTION
+============================================================ */
 .hero-container {
   display: flex;
   align-items: center;
@@ -87,7 +87,7 @@ DARK MODE — "slate" scheme overrides
 }
 
 /* ============================================================
-   CARD GRID
+  CARD GRID
 ============================================================ */
 .card-grid {
   display: flex;
@@ -121,6 +121,29 @@ DARK MODE — "slate" scheme overrides
 .card-description {
   color: var(--md-default-fg-color--light);
 }
+
+/* --- ICON TOGGLE LOGIC --- */
+
+/* 1. By default (Light Mode), show light icon elements and hide dark icon elements */
+.card-icon.icon-dark {
+  display: none !important;
+}
+.card-icon.icon-light {
+  display: block !important;
+  width: 35px; /* Adjust size as needed */
+  margin-bottom: 1rem;
+}
+
+/* 2. When Dark Mode is active, flip the visibility rules */
+[data-md-color-scheme="slate"] .card-icon.icon-light {
+  display: none !important;
+}
+[data-md-color-scheme="slate"] .card-icon.icon-dark {
+  display: block !important;
+  width: 35px; /* Keep size matching */
+  margin-bottom: 1rem;
+}
+
 /* Remove MkDocs Material default underlines from custom cards */
 .card .card-title,
 .card .card-description,
@@ -128,16 +151,73 @@ DARK MODE — "slate" scheme overrides
 .card-grid a {
   text-decoration: none !important;
 }
-
-/* Adjust for smaller screens */
+/* ============================================================
+  RESPONSIVE ADJUSTMENTS
+============================================================ */
 @media screen and (max-width: 768px) {
   .card {
     flex: 1 1 100%; /* Single card per row on smaller screens */
   }
 }
 /* ============================================================
-   ROUNDED IMAGES
+  ROUNDED IMAGES
 ============================================================ */
 img.rounded {
   border-radius: 8px;
+}
+
+/* ============================================================
+   GLOBAL BUTTON STYLES (UPDATED COLORS)
+   ============================================================ */
+
+/* --- Universal Light Mode Button (Default) --- */
+.md-button,
+button,
+input[type="submit"],
+input[type="button"] {
+  display: inline-block;
+  padding: 0.6rem 2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 50px;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  
+  /* Light Mode Base: Deep Navy background with Ice Blue text */
+  background-color: #0D1B2A !important; 
+  color: #F0F4F8 !important;              
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+/* Universal Light Mode Hover */
+.md-button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  /* Light Mode Hover: Teal Deep background */
+  background-color: #007A88 !important; 
+  color: #F0F4F8 !important; /* Kept light for readability against the teal */
+  text-decoration: none !important;
+}
+
+/* --- Universal Dark Mode Button Overrides --- */
+[data-md-color-scheme="slate"] .md-button,
+[data-md-color-scheme="slate"] button,
+[data-md-color-scheme="slate"] input[type="submit"],
+[data-md-color-scheme="slate"] input[type="button"] {
+  /* Dark Mode Base: Steel Tint background with Deep Navy text */
+  background-color: #DDE6EF !important; 
+  color: #0D1B2A !important;            
+  border: 1px solid transparent;
+}
+
+/* Universal Dark Mode Hover */
+[data-md-color-scheme="slate"] .md-button:hover,
+[data-md-color-scheme="slate"] button:hover,
+[data-md-color-scheme="slate"] input[type="submit"]:hover,
+[data-md-color-scheme="slate"] input[type="button"]:hover {
+  /* Dark Mode Hover: Electric Teal background with Deep Navy text */
+  background-color: #00E5C4 !important; 
+  color: #0D1B2A !important;            
+  text-decoration: none !important;
 }

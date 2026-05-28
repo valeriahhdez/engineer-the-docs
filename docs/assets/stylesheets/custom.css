@@ -1,31 +1,20 @@
-/* ============================================================
-   LIGHT MODE — Custom color overrides
-   Applied to all pages by default (`:root` = the whole page).
-   CSS variables prefixed with `--md-` can override built-in colors without touching
-   the theme source files.
-============================================================ */
-:root {
-  /* The main background color for the page body.
-     For the content area, the nav drawer, and any surface that isn't explicitly colored otherwise. */
-  --md-default-bg-color: #F0F4F8;
-  
-  /* The "primary" brand color: top header bar, the sidebar/nav active states, and any
-     component marked as primary (e.g. the hamburger menu icon, active tab underlines). */
-  --md-primary-fg-color: #0D1B2A;
+/* ==========================================================================
+   1. GLOBAL VARIABLES & THEME OVERRIDES
+   ========================================================================== */
 
-  /* The "accent" brand color: interactive highlights like focused inputs, selected checkboxes, hover
-     states on nav items, and inline code backgrounds. */
+/* --- Light Mode (Default) Tokens & Overrides --- */
+:root {
+  --md-default-bg-color: #F0F4F8;
+  --md-primary-fg-color: #0D1B2A;
   --md-accent-fg-color: #0099A8;
-  
-  /* Controls the color of `<a>` link text in the content body (the typeset area). Separate from the accent because you
-     may want links to be a different shade than other accents. */
   --md-typeset-a-color: #0099A8;
 }
+
 :root a:hover {
   color: #007A88;
 }
 
-/*Force page background in light mode */
+/* Force Light Mode background tokens across nested containers */
 :root,
 .md-container,
 .md-main,
@@ -35,30 +24,19 @@
   background-color: var(--md-default-bg-color) !important;
 }
 
-/* ============================================================
-  DARK MODE — "slate" scheme overrides
-============================================================ */
+/* --- Dark Mode (Slate Scheme) Tokens & Overrides --- */
 [data-md-color-scheme="slate"] {
-  /* Deep Navy page background */
   --md-default-bg-color: #0D1B2A;
-
-  /* Navy Surface for header bar and active nav states.
-  Using a slightly lighter navy here rather than the Electric
-  Teal keeps the header from feeling too loud. */  
-  --md-primary-fg-color: #152234;
-
-  /* Electric Teal for interactive highlights */
+  --md-primary-fg-color: #152234; /* Soft contrast header color adjustment */
   --md-accent-fg-color: #00E5C4;
-
-  /* Electric Teal for body link text */
   --md-typeset-a-color: #00E5C4;
 }
-/* Link hover uses the pressed teal shade */
+
 [data-md-color-scheme="slate"] a:hover {
   color: #00B39A;
 }
 
-/* Force Deep Navy background across all major layout containers */
+/* Force Dark Mode background tokens across nested containers */
 [data-md-color-scheme="slate"],
 [data-md-color-scheme="slate"] .md-container,
 [data-md-color-scheme="slate"] .md-main,
@@ -68,36 +46,47 @@
   background-color: var(--md-default-bg-color) !important;
 }
 
-/* ============================================================
-  HERO SECTION
-============================================================ */
+
+/* ==========================================================================
+   2. LAYOUT COMPONENTS
+   ========================================================================== */
+
+/* --- Hero Layout --- */
 .hero-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 2em;
 }
+
 .hero-content {
   flex: 1;
   padding-right: 2em;
 }
+
 .hero-image {
   flex: 1;
   max-width: 30%;
 }
 
-/* ============================================================
-  CARD GRID
-============================================================ */
+/* --- Card Grid Layout --- */
 .card-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem; /* Adjust space between cards */
+  gap: 1.5rem;
   margin: 2rem 0;
 }
 
+/* Remove default theme link decoration inside custom card patterns */
+.card .card-title,
+.card .card-description,
+.card a,
+.card-grid a {
+  text-decoration: none !important;
+}
+
 .card {
-  flex: 1 1 calc(50% - 1.5rem); /* Two cards per row */
+  flex: 1 1 calc(50% - 1.5rem); /* Two-column grid distribution baseline */
   display: block;
   padding: 1.5rem;
   border: 1px solid var(--md-default-fg-color--lightest);
@@ -122,101 +111,90 @@
   color: var(--md-default-fg-color--light);
 }
 
-/* --- ICON TOGGLE LOGIC --- */
+/* Responsive breakpoint for Card Grid */
+@media screen and (max-width: 768px) {
+  .card {
+    flex: 1 1 100%; /* Force full-width single column stacking on small viewports */
+  }
+}
 
-/* 1. By default (Light Mode), show light icon elements and hide dark icon elements */
+
+/* ==========================================================================
+   3. INTERFACE ELEMENTS & UTILITIES
+   ========================================================================== */
+
+/* --- Card Icon Theme-Toggling Logic --- */
 .card-icon.icon-dark {
   display: none !important;
 }
+
 .card-icon.icon-light {
   display: block !important;
-  width: 35px; /* Adjust size as needed */
+  width: 35px;
   margin-bottom: 1rem;
 }
 
-/* 2. When Dark Mode is active, flip the visibility rules */
+/* Flip asset visibility parameters depending on active system attribute */
 [data-md-color-scheme="slate"] .card-icon.icon-light {
   display: none !important;
 }
+
 [data-md-color-scheme="slate"] .card-icon.icon-dark {
   display: block !important;
-  width: 35px; /* Keep size matching */
+  width: 35px;
   margin-bottom: 1rem;
 }
 
-/* Remove MkDocs Material default underlines from custom cards */
-.card .card-title,
-.card .card-description,
-.card a,
-.card-grid a {
-  text-decoration: none !important;
-}
-/* ============================================================
-  RESPONSIVE ADJUSTMENTS
-============================================================ */
-@media screen and (max-width: 768px) {
-  .card {
-    flex: 1 1 100%; /* Single card per row on smaller screens */
-  }
-}
-/* ============================================================
-  ROUNDED IMAGES
-============================================================ */
+/* --- Generic Image Modifiers --- */
 img.rounded {
   border-radius: 8px;
 }
 
-/* ============================================================
-   GLOBAL BUTTON STYLES (UPDATED COLORS)
-   ============================================================ */
 
-/* --- Universal Light Mode Button (Default) --- */
-.md-button,
-button,
-input[type="submit"],
-input[type="button"] {
+/* ==========================================================================
+   4. GLOBAL CALL-TO-ACTION (CTA) BUTTONS
+   ========================================================================== */
+
+/* --- Universal Light Mode CTA Base & Hover --- */
+.md-content .md-button,
+.md-typeset .md-button,
+.hero-content .md-button,
+.start-journey-btn {
   display: inline-block;
-  padding: 0.6rem 2rem;
-  font-size: 0.9rem;
+  padding: 0.45rem 1.4rem;
+  font-size: 0.65rem;
   font-weight: 700;
   border-radius: 50px;
   transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-  
-  /* Light Mode Base: Deep Navy background with Ice Blue text */
   background-color: #0D1B2A !important; 
   color: #F0F4F8 !important;              
   border: 1px solid transparent;
   text-decoration: none;
 }
 
-/* Universal Light Mode Hover */
-.md-button:hover,
-button:hover,
-input[type="submit"]:hover,
-input[type="button"]:hover {
-  /* Light Mode Hover: Teal Deep background */
+.md-content .md-button:hover,
+.md-typeset .md-button:hover,
+.hero-content .md-button:hover,
+.start-journey-btn:hover {
   background-color: #007A88 !important; 
-  color: #F0F4F8 !important; /* Kept light for readability against the teal */
+  color: #F0F4F8 !important;
   text-decoration: none !important;
 }
 
-/* --- Universal Dark Mode Button Overrides --- */
-[data-md-color-scheme="slate"] .md-button,
-[data-md-color-scheme="slate"] button,
-[data-md-color-scheme="slate"] input[type="submit"],
-[data-md-color-scheme="slate"] input[type="button"] {
-  /* Dark Mode Base: Steel Tint background with Deep Navy text */
+/* --- Universal Dark Mode CTA Base & Hover --- */
+[data-md-color-scheme="slate"] .md-content .md-button,
+[data-md-color-scheme="slate"] .md-typeset .md-button,
+[data-md-color-scheme="slate"] .hero-content .md-button,
+[data-md-color-scheme="slate"] .start-journey-btn {
   background-color: #DDE6EF !important; 
   color: #0D1B2A !important;            
   border: 1px solid transparent;
 }
 
-/* Universal Dark Mode Hover */
-[data-md-color-scheme="slate"] .md-button:hover,
-[data-md-color-scheme="slate"] button:hover,
-[data-md-color-scheme="slate"] input[type="submit"]:hover,
-[data-md-color-scheme="slate"] input[type="button"]:hover {
-  /* Dark Mode Hover: Electric Teal background with Deep Navy text */
+[data-md-color-scheme="slate"] .md-content .md-button:hover,
+[data-md-color-scheme="slate"] .md-typeset .md-button:hover,
+[data-md-color-scheme="slate"] .hero-content .md-button:hover,
+[data-md-color-scheme="slate"] .start-journey-btn:hover {
   background-color: #00E5C4 !important; 
   color: #0D1B2A !important;            
   text-decoration: none !important;

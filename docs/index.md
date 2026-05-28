@@ -29,10 +29,11 @@ hide:
     </div>
   </a>
   <a href="path/to/custom-apps/page.md" class="card">
-    <img src="path/to/your/custom-apps-image.svg" alt="Custom Apps card image">
+    <img src="assets/images/icons/rocket-dark.svg" class="card-icon icon-dark" alt="Rocket icon card image">
+    <img src="assets/images/icons/rocket-light.svg" class="card-icon icon-light" alt="Rocket icon card image">
     <div class="card-content">
-      <div class="card-title">Build your docs pipeline</div>
-      <div class="card-description">Learn how to add quality gates and automate docs tasks.</div>
+      <div class="card-title">Get started</div>
+      <div class="card-description">Create and deploy your first site.</div>
     </div>
   </a>
 </div>

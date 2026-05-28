@@ -5,7 +5,7 @@ extra_css = ["assets/stylesheets/custom.css"]
 # Navigation
 nav = [
     { "Home" = "index.md" },
-    { "DocEng fundamentals"= [
+    { "What is docs engineering?"= [
         {"Docs as code, DocOps, and docs engineering" = "introduction/docs-engineering-overview.md" }
     ]}
 ] 

@@ -6,7 +6,6 @@ hide:
 ---
 
 
-
 <div class="hero-container">
   <div class="hero-content">
     <h1>Engineer the docs</h1>

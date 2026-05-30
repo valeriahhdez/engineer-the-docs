@@ -1,0 +1,6 @@
+config:
+  # MD013/line-length: Long sentences are fine. Let the editor handle soft-wrapping.
+  MD013: false
+
+  # MD033/no-inline-html: Allows you to use custom HTML layout blocks/cards on pages.
+  MD033: false

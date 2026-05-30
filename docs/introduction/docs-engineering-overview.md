@@ -24,9 +24,9 @@ DocOps is what DaC looks like when it is running. The term borrows from [DevOps]
 
 A DocOps pipeline typically includes a CI/CD system (GitHub Actions is common) that triggers on every pull request or merge. That pipeline runs quality gates, for example, a linter like Vale checking against your style guide. It deploys the output to a hosting environment like GitHub Pages, Netlify, or Cloudflare Pages, and may also run accessibility checks, spell checking, or custom validation scripts.
 
-The feedback loop is the key concept here. In a mature DocOps setup, a writer submitting a pull request (PR) in GitHub gets automated feedback within seconds, for example: 
+The feedback loop is the key concept here. In a mature DocOps setup, a writer submitting a pull request (PR) in GitHub gets automated feedback within seconds, for example:
 
-_This heading violates the style guide._ 
+_This heading violates the style guide._
 
 The quality gate runs before a human reviewer ever looks at the content. That changes the economics of documentation review substantially.
 
@@ -34,7 +34,7 @@ DocOps is not optional overhead on top of DaC. It is what makes docs as code sus
 
 ## Docs engineering: The implementation layer
 
-A docs engineering is not a writing role that uses Git. It is an engineering role that happens to own documentation infrastructure. 
+A docs engineering is not a writing role that uses Git. It is an engineering role that happens to own documentation infrastructure.
 
 A docs engineer owns these tasks:
 
@@ -54,7 +54,6 @@ An organization can adopt docs as code without a dedicated docs engineer — wri
 A docs engineer, by contrast, always works within a DocOps frame. You cannot meaningfully own a documentation platform without thinking in terms of pipelines and quality gates. The role presupposes the practice.
 
 ![An isometric diagram nesting DaC: The methodology, DocOps: The practice, and Docs engineering: The role as stacked panels.](/assets/images/docs-engineering-overview.png){ .rounded }
-
 
 ## What this looks like in practice
 

@@ -7,7 +7,10 @@ nav = [
     { "Home" = "index.md" },
     { "What is docs engineering?"= [
         {"Docs as code, DocOps, and docs engineering" = "introduction/docs-engineering-overview.md" }
-    ]}
+    ]},
+    { "Get started" = [
+         {"Set up your project" = "get-started/set-up-project.md"}
+     ]}
 ] 
     # { "Get started" = [
     #     {},
@@ -35,16 +38,31 @@ nav = [
 [project.theme]
 language = "en"
 features = [
+    
+    "navigation.instant",
+    "navigation.instant.progress",
+    "navigation.path",
     "navigation.tabs",
     "navigation.tabs.sticky",
     "navigation.sections",
     "navigation.expand",
     "search.suggest",
     "search.highlight",
+    "content.code.copy",
+    "content.code.select",
+    "content.code.annotate",
+    "toc.follow"
 ]
 
 [markdown_extensions]
 attr_list = true
+# Enable !!! style callouts
+[project.markdown_extensions.admonition]
+# Enable collapsible callouts
+[project.markdown_extensions.pymdownx.details]
+# Extend Markdown code block capabilities with superfences
+[project.markdown_extensions.pymdownx.superfences]
+
 
 # Light mode
 [[project.theme.palette]]
@@ -63,3 +81,12 @@ primary = "custom"
 accent = "custom"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
+
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.snippets]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true

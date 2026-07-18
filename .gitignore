@@ -1,5 +1,11 @@
+# Virtual environment
 .venv/
+
+# Zensical build output
 site/
 .DS_Store
 mkdocs.yml.bak
+
+# Python cache files
+__pycache__/
 .cache

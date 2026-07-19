@@ -6,5 +6,4 @@ config:
   MD033: false
 
   # MD046/code-block-style: Ignore indentation issues inside tabs
-  MD046:
-    style: "fenced"
+  MD046: false

@@ -82,7 +82,7 @@ __pycache__/
 *.cache/
 ```
 
-c. ### Create a GitHub repository and set the remote
+### c. Create a GitHub repository and set the remote
 
 Create an empty GitHub repository. Do not add a README, license, or `.gitignore` file; your local project already contains the files required for this tutorial.
 
@@ -103,11 +103,9 @@ If Git prompts for a user name or email when you commit later, configure your Gi
 
 ## 2. Create a Python virtual environment and pin dependencies
 
-### Virtual environments and pinned dependencies
+A Python virtual environment isolates project dependencies from the system Python installation. For more information, see the [Python `venv` documentation](https://docs.python.org/3/library/venv.html).
 
-A Python virtual environment isolates project dependencies from the system Python installation. A `requirements.txt` file records the installed package versions so another environment can install the same set of dependencies.
-
-For more information, see the [Python `venv` documentation](https://docs.python.org/3/library/venv.html).
+A `requirements.txt` file records the installed package versions so another environment can install the same set of dependencies.
 
 ### a. Create and activate the virtual environment
 
@@ -267,7 +265,7 @@ Consider using the following conventions:
 - Use descriptive names for content pages. 
 - Use `index.md` for a section landing page.
 
-For guidance about planning sections, naming content, and maintaining the structure, see [Organize documentation content](../information-architecture/organize-documentation-content.md). This information is separate from the setup procedure so that you can apply it as the site grows.
+For guidance about planning sections, naming content, and maintaining the structure, see Organize documentation content. This information is separate from the setup procedure so that you can apply it as the site grows.
 
 ## 5. Preview and verify the documentation site locally
 

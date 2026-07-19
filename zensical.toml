@@ -1,5 +1,7 @@
 [project]
 site_name = "Engineer the docs"
+site_description = "A docs-as-code portfolio site built with Zensical"
+site_author = "Valeria Hernandez"
 extra_css = ["assets/stylesheets/custom.css"]
 
 # Navigation
@@ -10,14 +12,13 @@ nav = [
     ]},
     { "Get started" = [
          {"Set up your project" = "get-started/set-up-project.md"}
-     ]}
+     ]},
+    { "Information architecture" = [
+        {"Organize documentation content" = "information-architecture/organize-documentation-content.md"}
+    ]}
 ] 
     # { "Get started" = [
     #     {},
-    #     {},
-    #     {}
-    # ]},
-    # {"Information architecture" = [
     #     {},
     #     {}
     # ]},

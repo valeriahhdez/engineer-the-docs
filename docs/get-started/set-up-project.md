@@ -1,20 +1,24 @@
-# Set up your docs-as-code project from scratch
+---
+title : "Set up a docs-as-code project with Zensical"
+---
 
-A docs-as-code project is, at its core, a software project. The source files are Markdown, but the surrounding infrastructure (version control, dependency management, configuration, and automations) follows the same engineering practices applied to any codebase. This is what makes a documentation project maintainable, reproducible, and deployable by a CI/CD pipeline.
+# Set up a docs-as-code project with Zensical
 
-This tutorial walks you through setting up a documentation site from scratch using Zensical as the static site generator (SSG). [Zensical](https://zensical.org) is the successor project to Material for MkDocs, built by the same team.
+A docs-as-code project uses source files, version control, dependency management, configuration, and automation in the same way as a software project. This tutorial uses Markdown source files and Zensical to create a documentation site.
 
-To learn more about why choosing Zensical is the right move at this time, see the [Zensical Monthly, February 2026 Newsletter](https://mail.zensical.org/monthly/2026/02/index.html) and the [roadmap](https://zensical.org/about/roadmap/).  
+This tutorial shows you how to set up a documentation site using [Zensical](https://zensical.org), a static site generator (SSG). Zensical is the successor project to Material for MkDocs and is built by the same team.
+
+For information about Zensical's development plans, see the [roadmap](https://zensical.org/about/roadmap/).
 
 By the end, you will have the following:
 
-- A Git repository connected to GitHub.
+- A local Git repository connected to GitHub.
 - A reproducible Python virtual environment with pinned dependencies.
-- A `zensical.toml` configuration file with the settings that matter.
-- A folder structure that scales and follows conventions.
-- A locally running site you've verified before committing.
+- A `zensical.toml` configuration file with basic settings.
+- A consistent folder structure.
+- A locally running site that you have verified before committing.
 
-The project you build here is the foundation for adding GitHub Actions to build and deploy your pipeline automatically on every push.
+The next tutorial uses this project to build and deploy the site with GitHub Actions.
 
 ???note "Zensical is under active development"
       Zensical is a young project and its configuration schema may evolve between
@@ -23,18 +27,30 @@ The project you build here is the foundation for adding GitHub Actions to build 
       that configuration keys and CLI commands reflect the current version.
       This tutorial is written against Zensical 0.0.43.
 
-## Prerequisites
+## Before you begin
 
 Before you begin, make sure you have the following:
 
-- **Git** installed on your system ([download](https://git-scm.com/downloads))
-- **A GitHub account** ([github.com](https://github.com))
-- **Python 3.8 or later** installed ([download](https://www.python.org/downloads/))
-- A terminal (macOS/Linux) or Command Prompt / PowerShell (Windows)
+- [Git](https://git-scm.com/downloads) installed on your system.
+- A [GitHub account](https://github.com).
+- The Python version supported by your target Zensical release. Check the [Zensical installation documentation](https://zensical.org/docs/) for the current requirement.
+- A terminal on macOS or Linux, or Command Prompt or PowerShell on Windows.
+- Permission to create a GitHub repository.
 
-## Step 1: Initialize your Git repo and connect it to GitHub
+Verify the installed tools:
 
-### a. Create your project folder and initialize Git
+```bash
+git --version
+python --version
+```
+
+On macOS or Linux, use `python3 --version` if `python` is unavailable.
+
+
+## 1. Initialize a Git repository and connect it to GitHub
+
+
+### a. Create a project folder and initialize Git
 
 Open a terminal or command prompt and run this command:
 
@@ -44,13 +60,13 @@ cd YOUR_PROJECT_NAME
 git init
 ```
 
-`git init` creates a hidden `.git` directory that tracks your project's history. Your project folder is now a local Git repository.
+`git init` creates a hidden `.git` directory. Your project folder is now a local Git repository.
 
-### b. Create a `.gitignore`
+### b. Create a `.gitignore` file
 
-Not everything in your project folder should be committed. The virtual environment, the built site output, and Python cache files are all generated artifacts that can be recreated from what's already in the repo. Committing them adds noise without value.
+Do not commit generated files that can be recreated from the project source. These include the virtual environment, built site output, and Python cache files.
 
-Create a `.gitignore` file in the project root and paste following content into it:
+Create a `.gitignore` file in the project root and add the following content:
 
 ```title=".gitignore", linenums="1"
 # Virtual environment
@@ -62,32 +78,38 @@ site/
 # Python cache
 __pycache__/
 *.pyc
+
+# Local project caches
+.cache
+*.cache/
 ```
 
-### c. Create the GitHub repository and set the remote
+c. ### Create a GitHub repository and set the remote
 
-Create an empty repository, no README, no license, no `.gitignore` file.
+Create an empty GitHub repository. Do not add a README, license, or `.gitignore` file; your local project already contains the files required for this tutorial.
 
-1. Go to [github.com/new](https://github.com/new)
+1. Go to [github.com/new](https://github.com/new).
 2. Give the repository the same name as your local folder (`YOUR_PROJECT_NAME`).
-3. Leave the **Add README** toggle off. 
-4. Select **No .gitignore** and **No license** options from the dropdown menus. 
-5. Click **Create repository**
+3. Leave the **Add README** toggle off.
+4. Select **No .gitignore** and **No license** from the dropdown menus.
+5. Click **Create repository**.
 
-GitHub shows you a set of setup commands. Return to your terminal and copy and paste the commands under **push an existing repository from the command line**:
+GitHub displays setup commands. Run the following commands, replacing the placeholders with your GitHub user name and project name:
 
 ```bash title="push existing repository"
 git remote add origin https://github.com/YOUR_USERNAME/YOUR_PROJECT_NAME.git
-git branch -M main
+git branch -M main # Creates the git branch main
 ```
 
-## Step 2. Set up your Python environment and pin your dependencies
+If Git prompts for a user name or email when you commit later, configure your Git identity. For instructions, see [Set Git username](https://docs.github.com/en/get-started/git-basics/setting-your-username-in-git) and [Set Git email](https://docs.github.com/en/account-and-profile/how-tos/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address).
 
-### Why a virtual environment matters
+## 2. Create a Python virtual environment and pin dependencies
 
-A Python virtual environment is an isolated workspace that allows you to install project-specific dependencies without altering your global system Python. By separating your project's libraries from other applications on your machine, it prevents package version conflicts and ensures reproducible builds. Combined with a `requirements.txt` that pins exact versions, a virtual environment  guarantees that every machine running this project, including a GitHub Actions runner,  installs the same dependencies.
+### Virtual environments and pinned dependencies
 
-For a deeper dive into managing environments, see the [Real Python Guide to Virtual Environments](https://realpython.com/python-virtual-environments-a-primer/).
+A Python virtual environment isolates project dependencies from the system Python installation. A `requirements.txt` file records the installed package versions so another environment can install the same set of dependencies.
+
+For more information, see the [Python `venv` documentation](https://docs.python.org/3/library/venv.html).
 
 ### a. Create and activate the virtual environment
 
@@ -105,56 +127,49 @@ For a deeper dive into managing environments, see the [Real Python Guide to Virt
     .venv\Scripts\activate # Activation command
     ```
    
-Your prompt changes to show `(.venv)`, indicating the environment is
-active. From this point on, any Python package installation goes into `.venv`, not your global system Python.
+Every time you activate the environment, your prompt changes to show `(.venv)`. From this point forward, any Python package should be installed inside `.venv`, not your global system Python.
 
-??? tip "Create a shortcut for your environment"
-    To avoid typing the full activation command every time you want to jump back into your project, you can create a shortcut. A shell alias in your `.zshrc` or `.bashrc` (macOS/Linux), or a function in your PowerShell profile (Windows).  Search for "shell alias" (macOS/Linux) or "PowerShell profile function" (Windows) to get started.
+
 
 ### b. Install Zensical
 
 ```bash
-pip install zensical
+python -m pip install zensical
 ```
 
 This installs Zensical and all of its dependencies into your virtual
 environment.
 
-???note "Run `pip install` within your environment"
-    Make sure your terminal shows the `(.venv)` prefix before running `pip install`. If you install packages without activating the environment, your system may fail to register the zensical command line tools.
+???note "Run commands in the virtual environment"
+    Activate `.venv` before installing packages or running Zensical commands. If `zensical` is not found after installation, confirm that the environment is active and run `python -m pip show zensical`.
 
-### c. Pin your dependencies
+### c. Pin dependencies
 
 ```bash
-pip freeze > requirements.txt
+python -m pip freeze > requirements.txt
 ```
 
 `pip freeze` outputs every package currently installed in your environment,
 along with its exact version number. Writing that output to `requirements.txt`
-creates a [reproducibility contract](https://medium.com/@shihabyahia22/why-is-requirements-txt-so-important-for-programmer-ead437b4b6ca): anyone (or any machine) that runs
-`pip install -r requirements.txt` will get the same environment you have right
-now.
+records the environment in `requirements.txt`. A machine can install these versions by running `python -m pip install -r requirements.txt`.
 
 Open `requirements.txt` and confirm it exists and contains `zensical==` with a
 version number. It will also include Zensical's transitive dependencies.
 
-???tip "When to update `requirements.txt`"
-    Re-run `pip freeze > requirements.txt` any time you install or upgrade a
-    package. Keeping it in sync with your actual environment is what makes it
-    useful. In the next tutorial, your GitHub Actions workflow will use this
-    file to install dependencies on the CI runner.
+???tip "Update `requirements.txt` after dependency changes"
+    Run `python -m pip freeze > requirements.txt` after you install or upgrade a package. The GitHub Actions workflow in the next tutorial uses this file to install dependencies.
 
-## Step 3: Bootstrap and configure your site
+## 3. Create and configure a Zensical site
 
-### a. Bootstrap the project structure
+### a. Create the project structure
 
-Zensical includes a `new` command that generates a project scaffold for you:
+Zensical includes a `new` command that generates a project scaffold:
 
 ```bash
 zensical new .
 ```
 
-This creates the following structure in your project folder:
+The command might prompt before creating files in a nonempty directory. Review the prompt and keep the `.gitignore` and `requirements.txt` files you created. The generated project includes the following files:
 
 ```
 .
@@ -166,24 +181,18 @@ This creates the following structure in your project folder:
 └─ zensical.toml        # Your site configuration
 ```
 
-The `.github/workflows/docs.yml` file is a useful reference, but you'll write
-your own workflow from scratch in the next tutorial so you understand every
-line of it.
+The generated `.github/workflows/docs.yml` file is not required for this tutorial. The next tutorial explains how to create and configure a workflow.
 
 ### b. Configure `zensical.toml`
 
-Open `zensical.toml`. This is where Zensical reads everything it needs to know
-about your site: its identity, its structure, its appearance, and which features
-to enable.
+Open `zensical.toml`. This file specifies the site's identity, structure, appearance, and enabled features.
 
-All settings live inside a `[project]` scope. Here's a configuration that's
-appropriate for a professional documentation site, with explanations of each
-decision:
+Add or update the following settings in the `[project]` section. Replace the placeholders before you deploy the site:
 
 ```toml
 [project]
-site_name = "Engineer the Docs"
-site_url = "https://YOUR-USERNAME.github.io/engineer-the-docs/"
+site_name = "YOUR_SITE_NAME"
+site_url = "https://YOUR-USERNAME.github.io/YOUR_PROJECT_NAME/"
 site_description = "A docs-as-code portfolio site built with Zensical."
 site_author = "Your Name"
 docs_dir = "docs"
@@ -193,23 +202,17 @@ nav = [
 ]
 ```
 
-#### Why `site_url` is not optional
+#### The `site_url` setting
 
-Setting `site_url` is technically optional, but skipping it disables several
-features you want: instant navigation, instant previews, and correctly generated
-sitemaps. If you're deploying to GitHub Pages, Zensical needs
-this value to generate correct internal links. Set it now, even if the site
-isn't live yet.
+Set `site_url` to the URL where you plan to publish the site. For a GitHub Pages project site, the URL typically follows this pattern: `https://YOUR-USERNAME.github.io/YOUR_PROJECT_NAME/`. Check the [Zensical documentation](https://zensical.org/docs/setup/basics/) for the effects of omitting this setting in your target release.
 
-#### Why navigation should be explicit
+#### Explicit navigation
 
-By default, Zensical infers navigation from the folder structure. Define nav explicitly in zensical.toml to specify which pages appear in the navigation, their order, and their labels. This lets you organize navigation according to your information architecture instead of relying on the file system.
+By default, Zensical infers navigation from the folder structure. Define `nav` explicitly in `zensical.toml` to specify which pages appear in the navigation, their order, and their labels. This lets you organize navigation according to your information architecture instead of relying on the file system.
 
 #### Theme configuration
 
-Zensical ships with two theme variants: `modern` (the default) and `classic`,
-which matches Material for MkDocs exactly. For a new project, use the default `modern`. You can also enable navigation features that improve usability
-on a multi-section site:
+Zensical provides the `modern` theme by default and a `classic` variant for Material for MkDocs compatibility. The following configuration enables optional navigation features:
 
 ```toml
 [project.theme]
@@ -222,25 +225,22 @@ features = [
 ]
 ```
 
-The following list briefly explains each configuration feature:
+The following list describes the configured features:
 
-- `navigation.instant`: Turns the site into a single-page application.
-  Internal links load without a full page reload, which makes the site faster.
+- `navigation.instant`: Loads internal links without a full page reload.
 - `navigation.instant.progress`: Shows a progress indicator during navigation
   on slower connections.
-- `navigation.tabs`: Renders top-level nav sections as a tab bar below the
-  header, which works well for a multi-section documentation site.
-- `navigation.path`: Adds breadcrumb navigation above each page title, helping
-  readers understand where they are in the structure.
-- `toc.follow`: Keeps the table of contents sidebar scrolled to the active
-  section as the reader moves down the page.
+- `navigation.tabs`: Renders top-level navigation sections as tabs below the header.
+- `navigation.path`: Adds breadcrumb navigation above each page title.
+- `toc.follow`: Keeps the table of contents aligned with the active section.
 
-## Step 4: Establish your folder structure
+For a feature reference and theme-selection guidance, see the [Zensical documentation](https://zensical.org/docs/setup/basics/). Use only features supported by the Zensical version recorded in `requirements.txt`.
 
-The scaffold created by `zensical new` gives you a `docs/` directory with two
-files. Before adding more content, establish clear file-naming and directory conventions. Establishing and documenting these standards early ensures a predictable file structure that supports automated CI pipelines and multi-author collaboration.
+## 4. Create a documentation project structure
 
-### Recommended structure for a docs engineering site
+The scaffold created by `zensical new` includes a `docs/` directory. Use a consistent structure before you add more content.
+
+### Project structure
 
 ```
 engineer-the-docs/
@@ -251,9 +251,10 @@ engineer-the-docs/
 ├─ docs/
 │  ├─ index.md               # Site home page
 │  ├─ introduction/
-│  │  └─ index.md
-│  ├─ set-up-your-project/
-│  │  └─ index.md            # This article
+│  │  └─ index.md            # Section landing page
+│  ├─ get-started/
+│  │  ├─ set-up-your-project # This article
+│  │  └─ index.md            # Section landing page
 │  └─ assets/
 │     └─ images/
 ├─ .gitignore
@@ -261,28 +262,20 @@ engineer-the-docs/
 └─ zensical.toml
 ```
 
-### Recommended file naming conventions
+### File naming conventions
 
-Consider adopting the following naming conventions for your project:
+Consider using the following conventions:
 
-- Lowercase only: file and folder names should never contain uppercase
-  letters. `Set-Up-Your-Project.md` becomes `set-up-your-project.md`.
-- Hyphens, not underscores: `set-up-your-project`, not
-  `set_up_your_project`. Hyphens are standard in URLs and easier to read.
-- Descriptive names: the file name should tell you what the page covers
-  without opening it. `index.md` is fine for section landing pages; everything
-  else should be named for its content.
-- `index.md` for section landing pages: when a folder represents a section
-  of your site, create an `index.md` inside it. Zensical treats this as the
-  section's landing page.
+- Use lowercase letters: `set-up-your-project.md`, not `Set-Up-Your-Project.md`.
+- Use hyphens between words: `set-up-your-project`, not `set_up_your_project`.
+- Use descriptive names for content pages. 
+- Use `index.md` for a section landing page.
 
-These conventions matter beyond aesthetics. When your GitHub Actions workflow
-references file paths, and when Zensical generates URLs from them, consistency
-prevents broken links and unpredictable build behavior.
+For guidance about planning sections, naming content, and maintaining the structure, see [Organize documentation content](../information-architecture/organize-documentation-content.md). This information is separate from the setup procedure so that you can apply it as the site grows.
 
-## Step 5: Run locally and verify before you commit
+## 5. Preview and verify the documentation site locally
 
-Run the site locally before committing to find configuration and link errors earlier.
+Run and build the site locally before committing. This identifies configuration and link errors before the CI workflow runs.
 
 ### a. Start the local preview server
 
@@ -290,29 +283,28 @@ Run the site locally before committing to find configuration and link errors ear
 zensical serve
 ```
 
-Open [localhost:8000](http://localhost:8000) in your browser. Zensical starts a
-local web server and rebuilds the site automatically whenever you save a file.
+Open [localhost:8000](http://localhost:8000) in your browser. Zensical starts a local web server and rebuilds the site when you save a file.
 
-### b. Verify the site works as expected
+### b. Verify the site
 
 Before making your first commit, confirm the following:
 
-- The site loads: the home page renders without errors.
-- Navigation appears correctly: the pages defined in your `nav` are
-  visible and link to the right content.
-- No build warnings in the terminal: Zensical outputs warnings for missing
-  pages, broken internal links, and configuration issues; treat them as errors
-  at this stage.
-- The page title matches `site_name`: confirms your `zensical.toml` is
-  being read correctly
+- The home page renders without errors.
+- The pages defined in `nav` are visible and link to the intended content.
+- The page title matches `site_name`.
+- The terminal does not show warnings or errors.
 
-If you see configuration warnings, fix them before committing. A clean build
-locally is a prerequisite for a clean build on CI.
+Stop the server with `Cmd+C`(MacOS) `Ctrl+C` (Windows), then build the site:
 
-### c. Make your first commit
+```bash
+zensical build
+```
 
-After you verify the site is running cleanly, stop the server (`Ctrl+C`) and commit
-everything:
+Fix warnings and errors before committing. If port 8000 is already in use, stop the process using that port or specify an available port according to the Zensical CLI documentation.
+
+## 6. Make the first commit
+
+Commit the project files:
 
 ```bash
 git add .
@@ -320,22 +312,12 @@ git commit -m "Initial project setup: Zensical, venv, config, folder structure"
 git push -u origin main
 ```
 
-A meaningful commit message matters here too. `Initial commit` tells a future
-reader nothing. The message above tells
-them exactly what this commit changes.
+If `git push` requests authentication, follow GitHub's instructions for authenticating over HTTPS or SSH.
 
 ## What's next
 
-You now have a version-controlled, reproducible Zensical project that runs
-locally and is pushed to GitHub. Every structural decision you made in this
-tutorial — the virtual environment, the pinned `requirements.txt`, the explicit
-nav in `zensical.toml`, the consistent folder structure — was made with one
-purpose beyond the immediate one: to make this project automatable.
+You now have a Zensical project that runs locally and is stored in GitHub. The project includes a virtual environment, recorded Python dependencies, explicit navigation, and a consistent file structure.
 
-Right now, publishing your site requires you to run `zensical build` and deploy
-the output manually. The next tutorial removes that manual step entirely. You'll
-write a GitHub Actions workflow that triggers on every push to `main`, installs
-your dependencies from `requirements.txt`, builds the site, and deploys it to
-GitHub Pages automatically.
+The next tutorial adds a GitHub Actions workflow that installs dependencies, builds the site, and deploys it to GitHub Pages when you push changes to `main`.
 
-→ [Automate your pipeline with GitHub Actions](#) 
+Continue to: _Automate your pipeline with GitHub Actions_. 

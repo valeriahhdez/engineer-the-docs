@@ -8,4 +8,15 @@ mkdocs.yml.bak
 
 # Python cache files
 __pycache__/
+*.pyo
+*.pyd
+*.pyc
+
+# Local project caches
 .cache
+*.cache/
+
+# macOS specific files (Crucial for your Mac mini!)
+.DS_Store
+.AppleDouble
+.LSOverride

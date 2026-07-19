@@ -46,9 +46,7 @@ python --version
 
 On macOS or Linux, use `python3 --version` if `python` is unavailable.
 
-
 ## 1. Initialize a Git repository and connect it to GitHub
-
 
 ### a. Create a project folder and initialize Git
 
@@ -129,8 +127,6 @@ For more information, see the [Python `venv` documentation](https://docs.python.
    
 Every time you activate the environment, your prompt changes to show `(.venv)`. From this point forward, any Python package should be installed inside `.venv`, not your global system Python.
 
-
-
 ### b. Install Zensical
 
 ```bash
@@ -171,7 +167,7 @@ zensical new .
 
 The command might prompt before creating files in a nonempty directory. Review the prompt and keep the `.gitignore` and `requirements.txt` files you created. The generated project includes the following files:
 
-```
+```text
 .
 ├─ .github/workflows
 │  └─ docs.yml          # A starter GitHub Actions workflow
@@ -242,7 +238,7 @@ The scaffold created by `zensical new` includes a `docs/` directory. Use a consi
 
 ### Project structure
 
-```
+```text
 engineer-the-docs/
 ├─ .github/
 │  └─ workflows/

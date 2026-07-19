@@ -2,8 +2,6 @@
 title : "Set up a docs-as-code project with Zensical"
 ---
 
-# Set up a docs-as-code project with Zensical
-
 A docs-as-code project uses source files, version control, dependency management, configuration, and automation in the same way as a software project. This tutorial uses Markdown source files and Zensical to create a documentation site.
 
 This tutorial shows you how to set up a documentation site using [Zensical](https://zensical.org), a static site generator (SSG). Zensical is the successor project to Material for MkDocs and is built by the same team.
@@ -122,7 +120,7 @@ A `requirements.txt` file records the installed package versions so another envi
     python -m venv .venv
     .venv\Scripts\activate # Activation command
     ```
-   
+
 Every time you activate the environment, your prompt changes to show `(.venv)`. From this point forward, any Python package should be installed inside `.venv`, not your global system Python.
 
 ### b. Install Zensical
@@ -262,7 +260,7 @@ Consider using the following conventions:
 
 - Use lowercase letters: `set-up-your-project.md`, not `Set-Up-Your-Project.md`.
 - Use hyphens between words: `set-up-your-project`, not `set_up_your_project`.
-- Use descriptive names for content pages. 
+- Use descriptive names for content pages.
 - Use `index.md` for a section landing page.
 
 For guidance about planning sections, naming content, and maintaining the structure, see Organize documentation content. This information is separate from the setup procedure so that you can apply it as the site grows.
@@ -314,4 +312,4 @@ You now have a Zensical project that runs locally and is stored in GitHub. The p
 
 The next tutorial adds a GitHub Actions workflow that installs dependencies, builds the site, and deploys it to GitHub Pages when you push changes to `main`.
 
-Continue to: _Automate your pipeline with GitHub Actions_. 
+Continue to: _Automate your pipeline with GitHub Actions_.

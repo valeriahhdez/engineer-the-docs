@@ -4,3 +4,7 @@ config:
 
   # MD033/no-inline-html: Allows you to use custom HTML layout blocks/cards on pages.
   MD033: false
+
+  # MD046/code-block-style: Ignore indentation issues inside tabs
+  MD046:
+    style: "fenced"

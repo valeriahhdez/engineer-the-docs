@@ -19,7 +19,7 @@ hide:
 
 <h2>Explore resources</h2>
 <div class="card-grid">
-  <a href="path/to/api/page.md" class="card">
+  <a href="introduction/docs-engineering-overview.md" class="card">
     <img src="assets/images/icons/play-circle-dark.svg" class="card-icon icon-dark" alt="Play symbol card image">
     <img src="assets/images/icons/play-circle-light.svg" class="card-icon icon-light" alt="Play symbol card image">
     <div class="card-content">
@@ -27,7 +27,7 @@ hide:
       <div class="card-description">Learn the fundamentals of docs enginering, docs as code, and DocOps.</div>
     </div>
   </a>
-  <a href="path/to/custom-apps/page.md" class="card">
+  <a href="get-started/set-up-project.md" class="card">
     <img src="assets/images/icons/rocket-dark.svg" class="card-icon icon-dark" alt="Rocket icon card image">
     <img src="assets/images/icons/rocket-light.svg" class="card-icon icon-light" alt="Rocket icon card image">
     <div class="card-content">

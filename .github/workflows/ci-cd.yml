@@ -1,0 +1,92 @@
+name: Documentation Quality & Deployment
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Permissions required for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent concurrent deployments from overlapping
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # -------------------------------------------------------------------
+  # STEP 1: Quality Gate (Linting & Formatting)
+  # -------------------------------------------------------------------
+  lint-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Fetch your documentation files from the repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: markdownlint quality gate
+      - name: Run Markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: |
+            **/*.md
+
+      # Placeholder: Ready for when you want to add formatting checks
+      # - name: Run Prettier Check
+      #   run: echo "Prettier gate will go here"
+
+      # Placeholder: Ready for when you want to add style/prose checks
+      # - name: Run Vale Prose Linter
+      #   run: echo "Vale gate will go here"
+
+      # -------------------------------------------------------------------
+  # STEP 2: Build Site & Upload Artifacts
+  # -------------------------------------------------------------------
+  build:
+    needs: lint-and-validate # Ensures linting passes first
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build site with Zensical
+        run: zensical build --strict
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'site'
+
+  # -------------------------------------------------------------------
+  # STEP 3: Deploy to GitHub Pages
+  # -------------------------------------------------------------------
+  deploy:
+    # Only deploy on pushes to main (not on PRs or feature branch pushes)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: "github-pages"
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

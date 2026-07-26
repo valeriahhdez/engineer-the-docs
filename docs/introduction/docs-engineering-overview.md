@@ -14,13 +14,13 @@ DaC is a methodology for managing documentation as code. These are its core prin
 - Review through workflows the same way code does (pull requests, approvals, merge).
 - Build and deploy automatically rather than published manually.
 
-This approach is tool agnostic. You can practice docs as code with Zensical, Docusaurus, Sphinx, Hugo, GitBook, Mintlify or other static site generators. What defines the methodology is the workflow, not the toolchain.
+This approach is tool agnostic. You can practice docs as code with Zensical, Docusaurus, Sphinx, Hugo, GitBook, Mintlify, or other static site generators. What defines the methodology is the workflow, not the toolchain.
 
 DaC also has implications for where documentation lives. Markdown-based documentation can live directly within the software's repository or in a dedicated, linked repository. That proximity changes the relationship between documentation and code in ways that are harder to achieve when docs live in a separate platform.
 
 ## Documentation operations (DocOps): The operational layer
 
-DocOps is what DaC looks like when it is running. The term borrows from [DevOps](https://en.wikipedia.org/wiki/DevOps) and refers to the same shift applied to documentation: move from manual, handoff-driven processes toward automated, continuously-integrated ones.
+DocOps is what DaC looks like when it is running. The term borrows from [DevOps](https://en.wikipedia.org/wiki/DevOps) and refers to the same shift applied to documentation: move from manual, handoff-driven processes toward automated, continuously integrated ones.
 
 A DocOps pipeline typically includes a CI/CD system (GitHub Actions is common) that triggers on every pull request or merge. That pipeline runs quality gates, for example, a linter like Vale checking against your style guide. It deploys the output to a hosting environment like GitHub Pages, Netlify, or Cloudflare Pages, and may also run accessibility checks, spell checking, or custom validation scripts.
 
@@ -49,7 +49,7 @@ The skill profile reflects this. A docs engineer needs technical writing fluency
 
 ## How these concepts are related
 
-An organization can adopt docs as code without a dedicated docs engineer — writers can commit Markdown, open pull requests, and publish via a static site generator with minimal automation. Many teams work this way. But that team is not doing DocOps in any meaningful sense; they have adopted the file format and the workflow without building the operational layer.
+An organization can adopt docs as code without a dedicated docs engineer —writers can commit Markdown, open pull requests, and publish via a static site generator with minimal automation. Many teams work this way. But that team is not doing DocOps in any meaningful sense; they have adopted the file format and the workflow without building the operational layer.
 
 A docs engineer, by contrast, always works within a DocOps frame. You cannot meaningfully own a documentation platform without thinking in terms of pipelines and quality gates. The role presupposes the practice.
 
@@ -57,7 +57,7 @@ A docs engineer, by contrast, always works within a DocOps frame. You cannot mea
 
 ## What this looks like in practice
 
-A team early in the transition typically starts with docs as code: pick a static site generator, migrate content to Markdown, put the repo on GitHub. That is enough to unlock the workflow benefits — version history, diff review, branching strategies — without committing to a full pipeline.
+A team early in the transition typically starts with docs as code: pick a static site generator, migrate content to Markdown, put the repository on GitHub. That is enough to unlock the workflow benefits—version history, diff review, branching strategies—without committing to a full pipeline.
 
 As the workflow matures, the DocOps layer gets added incrementally. A basic CI check that runs Vale on pull requests. A link checker that runs on merge. A deployment pipeline that publishes automatically on push to main. Each addition extends the system's ability to maintain quality at scale without increasing the review burden on individual humans.
 

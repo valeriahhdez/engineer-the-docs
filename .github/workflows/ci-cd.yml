@@ -6,11 +6,13 @@ on:
   pull_request:
     branches: [ main ]
 
-# Permissions required for GitHub Pages deployment
+# Permissions required for GitHub Pages deployment and Vale inline annotations
 permissions:
   contents: read
   pages: write
   id-token: write
+  pull-requests: write  # Allows Vale to comment/annotate PR lines
+
 
 # Prevent concurrent deployments from overlapping
 concurrency:
@@ -24,7 +26,7 @@ jobs:
   lint-and-validate:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Fetch your documentation files from the repository
+      # Step 1: Fetch documentation files from the repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -39,11 +41,16 @@ jobs:
       # - name: Run Prettier Check
       #   run: echo "Prettier gate will go here"
 
-      # Placeholder: Ready for when you want to add style/prose checks
-      # - name: Run Vale Prose Linter
-      #   run: echo "Vale gate will go here"
+      # Step 3: Run Vale Prose Linter
+      - name: Run Vale
+        uses: vale-cli/vale-action@v2
+        with:
+          version: 3.15.2
+          files: 'docs' # Lint docs directory (or use '.' for whole repo)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # -------------------------------------------------------------------
+  # -------------------------------------------------------------------
   # STEP 2: Build Site & Upload Artifacts
   # -------------------------------------------------------------------
   build:

@@ -24,7 +24,7 @@ hide:
     <img src="assets/images/icons/play-circle-light.svg" class="card-icon icon-light" alt="Play symbol card image">
     <div class="card-content">
       <div class="card-title">New to docs engineering?</div>
-      <div class="card-description">Learn the fundamentals of docs enginering, docs as code, and DocOps.</div>
+      <div class="card-description">Learn the fundamentals of docs engineering, docs as code, and DocOps.</div>
     </div>
   </a>
   <a href="get-started/set-up-project.md" class="card">

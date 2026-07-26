@@ -22,7 +22,7 @@ The next tutorial uses this project to build and deploy the site with GitHub Act
       Zensical is a young project and its configuration schema may evolve between
       releases. Before following this tutorial, cross-reference the
       [official Zensical documentation](https://zensical.org/docs/) to confirm
-      that configuration keys and CLI commands reflect the current version.
+      that configuration keys and command line tool commands reflect the current version.
       This tutorial is written against Zensical 0.0.43.
 
 ## Before you begin
@@ -46,7 +46,7 @@ On macOS or Linux, use `python3 --version` if `python` is unavailable.
 
 ## 1. Initialize a Git repository and connect it to GitHub
 
-### a. Create a project folder and initialize Git
+### A. Create a project folder and initialize Git
 
 Open a terminal or command prompt and run this command:
 
@@ -58,7 +58,7 @@ git init
 
 `git init` creates a hidden `.git` directory. Your project folder is now a local Git repository.
 
-### b. Create a `.gitignore` file
+### B. Create a `.gitignore` file
 
 Do not commit generated files that can be recreated from the project source. These include the virtual environment, built site output, and Python cache files.
 
@@ -80,7 +80,7 @@ __pycache__/
 *.cache/
 ```
 
-### c. Create a GitHub repository and set the remote
+### C. Create a GitHub repository and set the remote
 
 Create an empty GitHub repository. Do not add a README, license, or `.gitignore` file; your local project already contains the files required for this tutorial.
 
@@ -105,7 +105,7 @@ A Python virtual environment isolates project dependencies from the system Pytho
 
 A `requirements.txt` file records the installed package versions so another environment can install the same set of dependencies.
 
-### a. Create and activate the virtual environment
+### A. Create and activate the virtual environment
 
 === "macOS / Linux"
 
@@ -123,7 +123,7 @@ A `requirements.txt` file records the installed package versions so another envi
 
 Every time you activate the environment, your prompt changes to show `(.venv)`. From this point forward, any Python package should be installed inside `.venv`, not your global system Python.
 
-### b. Install Zensical
+### B. Install Zensical
 
 ```bash
 python -m pip install zensical
@@ -135,7 +135,7 @@ environment.
 ???note "Run commands in the virtual environment"
     Activate `.venv` before installing packages or running Zensical commands. If `zensical` is not found after installation, confirm that the environment is active and run `python -m pip show zensical`.
 
-### c. Pin dependencies
+### C. Pin dependencies
 
 ```bash
 python -m pip freeze > requirements.txt
@@ -153,7 +153,7 @@ version number. It will also include Zensical's transitive dependencies.
 
 ## 3. Create and configure a Zensical site
 
-### a. Create the project structure
+### A. Create the project structure
 
 Zensical includes a `new` command that generates a project scaffold:
 
@@ -175,7 +175,7 @@ The command might prompt before creating files in a nonempty directory. Review t
 
 The generated `.github/workflows/docs.yml` file is not required for this tutorial. The next tutorial explains how to create and configure a workflow.
 
-### b. Configure `zensical.toml`
+### B. Configure `zensical.toml`
 
 Open `zensical.toml`. This file specifies the site's identity, structure, appearance, and enabled features.
 
@@ -269,7 +269,7 @@ For guidance about planning sections, naming content, and maintaining the struct
 
 Run and build the site locally before committing. This identifies configuration and link errors before the CI workflow runs.
 
-### a. Start the local preview server
+### A. Start the local preview server
 
 ```bash
 zensical serve
@@ -277,7 +277,7 @@ zensical serve
 
 Open [localhost:8000](http://localhost:8000) in your browser. Zensical starts a local web server and rebuilds the site when you save a file.
 
-### b. Verify the site
+### B. Verify the site
 
 Before making your first commit, confirm the following:
 

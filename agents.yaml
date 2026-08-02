@@ -1,0 +1,58 @@
+  # agents.yaml - Discovery & Configuration
+# Single source of truth for agent orchestration
+#
+# PRINCIPLES:
+# - Explicit opt-in: only listed files are checked
+# - Negation: use ! prefix to exclude patterns
+# - Markers: # --no-{agent-name} at file top skips entire file
+# - Glossary: per-agent reference data (paths specified here)
+
+agents:
+  consistency_checker:
+    enabled: true
+    description: "Validates terminology against glossary"
+    # Two-pass glob: positive patterns first, then negate.
+    sources:
+      - "docs/get/started/**/*.md"              # Catch-all: all markdown
+      - "!docs/generated/**/*.md"               # Exclude auto-generated
+      - "docs/introduction/**/*.md"             # Explicit: even though in docs/, always check
+    config:
+      glossary_path: "reference/glossary.yaml"
+      exclude_markers:
+        - "# --no-consistency-check"            # Must appear at the top of the file *file-level only)
+    
+  alt_text_generator:
+    enabled: true
+    description: "Generates alt text for images"
+    sources:
+      - "docs/introduction/**/*.md"
+    config:
+      image_folders:
+        - "docs/assets"
+      min_image_width: 200                      # Only process images > 200px (avoid icons, bafges, and UI micro assets)
+      skip_formats: ["svg"]                     # SVGs often have built-in alt
+      exclude_markers:
+        - "# --no-alt-text"
+    
+  seo_optimizer:
+    enabled: true
+    description: "Scores headings for SEO and clarity"
+    sources:
+      - "docs/**/*.md"
+    config:
+      check_hierarchy: true
+      min_heading_clarity: 40                   # Score 0-100
+      exclude_markers:
+        - "# --no-seo-check"
+
+# Output settings (post-build artifact configuration)
+output:
+  artifact_name: "agent-qa-report"
+  format: "github-actions"                     # Supported: github-action, s3, local
+  include_line_numbers: true
+  severity_threshold: "info"                   # Report all issues: info, warning, and error
+
+  # Output destinations (will be configured in CI/CD)
+  # - JSON artifact upload to GitHub Actions
+  # - Markdown summary for manual review
+  # - Future: GitHub PR annotations (inline comments)

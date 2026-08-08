@@ -1,11 +1,10 @@
 """
-Consistency Checker Agent - Entry Point Skeleton
+Entry point for the consistency checker agent.
 
 ARCHITECTURE:
   Load config → Scan docs → Run agent → Format output → Return results
 
-DISCOVERY & EXECUTION RULES:
-
+DISCOVERY and EXECUTION RULES:
 1. Markers: Agent-specific opt-outs (file-level only)
    - Markers: # --no-consistency-check at file top skips entire file
    - Other agents use: # --no-alt-text, # --no-seo, etc.
@@ -39,421 +38,239 @@ DISCOVERY & EXECUTION RULES:
    - Future: GitHub PR annotations (inline comments)
 """
 
-from dataclasses import dataclass
-from typing import List
+import os
+import sys
 from pathlib import Path
-import glob
+from typing import Any, Dict, List
+ 
 import yaml
-
-
+from pydantic import BaseModel, Field
+ 
+# Add parent directory to path so we can import agents module
+sys.path.insert(0, str(Path(__file__).parent.parent))
+ 
+# Import production-ready config loaders
+from agents.config import load_config, load_glossary
+ 
+ 
 # ============================================================================
-# DATA STRUCTURES - Typed data flowing between steps
+# Type Definitions
 # ============================================================================
-
-@dataclass
-class DocumentInput:
-    """A single markdown file ready for checking."""
-    filepath: str      # relative path: "docs/get-started/setup.md"
-    content: str       # full markdown text
-    file_id: str       # unique ID for linking in output
-
-
-@dataclass
-class ConsistencyIssue:
-    """A single consistency violation found by the agent."""
-    filepath: str
-    line_num: int
-    term: str          # the term that was inconsistent
-    expected: str      # what the glossary says it should be
-    found: str         # what was actually in the doc
-    context: str       # surrounding text (for verification)
-    severity: str      # "error" | "warning" | "info"
-
-
-@dataclass
-class ConsistencyReport:
-    """Full results from consistency checker."""
-    issues: List[ConsistencyIssue]
-    file_count: int
-    issue_count: int
-    by_severity: dict  # {"error": 5, "warning": 12, "info": 3}
-
-
+ 
+class ConsistencyIssue(BaseModel):
+    """Single consistency check finding."""
+ 
+    file_path: str = Field(..., description="Relative path to checked file")
+    line_number: int = Field(..., description="Line where issue occurred")
+    term: str = Field(..., description="Canonical term from glossary")
+    found: str = Field(..., description="Variant found in document")
+    message: str = Field(..., description="Human-readable issue description")
+ 
+ 
+class ConsistencyReport(BaseModel):
+    """Structured output from consistency checker agent."""
+ 
+    status: str = Field(..., description="'pass' or 'fail'")
+    issues_found: int = Field(..., description="Count of consistency violations")
+    issues: List[ConsistencyIssue] = Field(
+        default_factory=list, description="List of specific issues"
+    )
+    glossary_terms_checked: int = Field(
+        ..., description="Count of canonical terms evaluated"
+    )
+    files_scanned: int = Field(..., description="Count of documentation files")
+    summary: str = Field(..., description="Human-readable summary")
+ 
+ 
 # ============================================================================
-# STEP 1: LOAD CONFIG & GLOSSARY
+# Mock Functions (Entry Point Skeleton)
 # ============================================================================
-
-def load_config(config_path: str = "agents.yaml") -> dict:
+ 
+ 
+def scan_docs(docs_root: str, marker_filter: str = "") -> List[str]:
     """
-    Load agents.yaml and validate structure.
-    
-    Raises FileNotFoundError or ValueError if:
-      - File doesn't exist
-      - File has invalid YAML
-      - Missing consistency_checker section
-    
-    Returns:
-      {
-        "consistency_checker": {
-          "enabled": True,
-          "sources": ["docs/**/*.md", "!docs/generated/**/*.md"],
-          "config": {
-            "glossary_path": "reference/glossary.yaml",
-            "exclude_markers": ["# --no-consistency-check"]
-          }
-        }
-      }
-    """
-    # Validate file exists
-    if not Path(config_path).exists():
-        raise FileNotFoundError(f"Config not found: {config_path}")
-    
-    # Load YAML
-    try:
-        with open(config_path, 'r') as f:
-            config = yaml.safe_load(f)
-    except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML in {config_path}: {e}")
-    
-    # Validate structure
-    if not config or "agents" not in config:
-        raise ValueError(f"Config missing 'agents' section")
-    
-    if "consistency_checker" not in config["agents"]:
-        raise ValueError(f"Config missing 'agents.consistency_checker' section")
-    
-    print(f"✓ Config loaded from {config_path}")
-    return config
-
-
-def load_glossary(glossary_path: str) -> dict:
-    """
-    Load reference/glossary.yaml.
-    
-    Raises FileNotFoundError or ValueError if:
-      - File doesn't exist
-      - File is empty or invalid YAML
-      - File has fewer than 3 terms (sanity check)
-    
-    Returns:
-      {
-        "API": "API (Application Programming Interface)",
-        "GitHub": "GitHub",
-        "Zensical": "Zensical",
-        ...
-      }
-    """
-    # Validate file exists
-    if not Path(glossary_path).exists():
-        raise FileNotFoundError(f"Glossary not found: {glossary_path}")
-    
-    # Load YAML
-    try:
-        with open(glossary_path, 'r') as f:
-            glossary = yaml.safe_load(f)
-    except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML in {glossary_path}: {e}")
-    
-    # Validate content
-    if not glossary or len(glossary) < 3:
-        raise ValueError(f"Glossary has {len(glossary or {})} terms; need at least 3")
-    
-    print(f"✓ Glossary loaded: {len(glossary)} terms from {glossary_path}")
-    return glossary
-
-
-# ============================================================================
-# STEP 2: INPUT ADAPTER - Scan docs with opt-in & negation logic
-# ============================================================================
-
-def scan_docs(sources: List[str], exclude_markers: List[str]) -> List[DocumentInput]:
-    """
-    Scan docs/ folder for markdown files using two-pass glob logic.
-    
-    Two-pass glob:
-      Pass 1: Collect all files matching positive patterns
-      Pass 2: Remove files matching negative patterns (! prefix)
-    
-    Respects markers:
-      - Files with '# --no-consistency-check' at top are skipped
-      - Marker must be first line (file-level exclusion only)
-    
+    Mock: Scan documentation files matching opt-in markers.
+ 
+    This is a skeleton function. In production, it will:
+    1. Walk docs_root recursively
+    2. Filter files by marker (e.g., skip files marked `# --no-consistency-check`)
+    3. Return list of markdown file paths
+ 
     Args:
-      sources: ["docs/**/*.md", "!docs/generated/**/*.md"]
-      exclude_markers: ["# --no-consistency-check"]
-    
+        docs_root: Root directory for documentation
+        marker_filter: Optional agent-specific marker to exclude files
+ 
     Returns:
-      [DocumentInput(...), DocumentInput(...), ...]
-    
-    TODO: Replace mock with real file globbing + marker checking.
+        List of file paths (currently mocked)
     """
-    
-    # Separate positive and negative patterns
-    positive_sources = [s for s in sources if not s.startswith("!")]
-    negative_sources = [s[1:] for s in sources if s.startswith("!")]
-    
-    # Pass 1: Collect files matching positive patterns
-    files = set()
-    for pattern in positive_sources:
-        # TODO: Use glob.glob(pattern, recursive=True)
-        # files.update(glob.glob(pattern, recursive=True))
-        pass
-    
-    # Pass 2: Remove files matching negative patterns
-    for pattern in negative_sources:
-        # TODO: Use glob.glob(pattern, recursive=True)
-        # files -= set(glob.glob(pattern, recursive=True))
-        pass
-    
-    # Mock files for demo
-    mock_files = [
-        DocumentInput(
-            filepath="docs/introduction/docs-engineering-overview.md",
-            content="# Docs-as-Code Overview\n\nGithub Actions powers our CI/CD...",
-            file_id="intro-overview"
-        ),
-        DocumentInput(
-            filepath="docs/get-started/setup-project.md",
-            content="# Set Up Your Project\n\nUse the github CLI...",
-            file_id="gs-setup"
-        ),
+    # MOCK: Return hardcoded file paths
+    return [
+        "docs/index.md",
+        "docs/guides/setup.md",
+        "docs/guides/architecture.md",
+        "docs/reference/cli.md",
     ]
-    
-    print(f"✓ Scanned docs/: found {len(mock_files)} files")
-    print(f"  Positive patterns: {positive_sources}")
-    print(f"  Negative patterns: {negative_sources}")
-    print(f"  Skipped (markers): 0")
-    
-    return mock_files
-
-
-# ============================================================================
-# STEP 3: AGENT LOGIC - Consistency checker with Groq
-# ============================================================================
-
+ 
+ 
 def consistency_checker_agent(
-    documents: List[DocumentInput],
-    glossary: dict,
-    groq_api_key: str = None
+    file_paths: List[str], glossary: Dict[str, str]
 ) -> List[ConsistencyIssue]:
     """
-    Check each document against glossary using Groq API with JSON mode.
-    
-    Flow:
-      1. For each document, build prompt with glossary + text
-      2. Call Groq API with response_format=json_schema (structured output)
-      3. Parse response: extract issues (term, line_num, severity)
-         - Groq returns validated Pydantic JSON, no parsing errors
-      4. Accumulate issues
-    
+    Mock: Run consistency check against canonical terminology.
+ 
+    This is a skeleton function. In production, it will:
+    1. Load each file
+    2. Search for glossary terms and variants
+    3. Return issues for terminology mismatches
+ 
     Args:
-      documents: List of DocumentInput from Step 2
-      glossary: Dict from Step 1
-      groq_api_key: API key (from env or config)
-    
+        file_paths: List of markdown files to check
+        glossary: Canonical terminology dictionary
+ 
     Returns:
-      [ConsistencyIssue(...), ...]
-    
-    TODO: 
-      - Implement actual Groq API call with response_format
-      - Design prompt that returns structured JSON
-      - Handle API errors gracefully
+        List of consistency issues (currently mocked)
     """
-    
-    issues = []
-    
-    for doc in documents:
-        # TODO: Build prompt with glossary + document content
-        # prompt = f"""
-        # You are a documentation consistency checker.
-        # 
-        # Glossary:
-        # {json.dumps(glossary, indent=2)}
-        # 
-        # Document:
-        # {doc.content}
-        # 
-        # Find all terms in the document that don't match the glossary.
-        # Return ONLY valid JSON matching this schema:
-        # {ConsistencyIssueResponse.model_json_schema()}
-        # """
-        
-        # TODO: Call Groq API
-        # response = groq.Completion.create(
-        #     model="mixtral-8x7b-32768",  # or similar
-        #     messages=[{"role": "user", "content": prompt}],
-        #     response_format={
-        #         "type": "json_schema",
-        #         "json_schema": {
-        #             "name": "consistency_check",
-        #             "schema": ConsistencyAgentResponse.model_json_schema()
-        #         }
-        #     }
-        # )
-        
-        # Mock issue for demo (shows expected shape)
-        issues.append(
-            ConsistencyIssue(
-                filepath=doc.filepath,
-                line_num=5,
-                term="github",
-                expected="GitHub",
-                found="github",
-                context="Use the github CLI to clone...",
-                severity="warning"
-            )
-        )
-    
-    print(f"✓ Agent processed {len(documents)} documents")
-    print(f"  Found {len(issues)} issues")
-    return issues
-
-
-# ============================================================================
-# STEP 4: OUTPUT FORMATTER - Structure results for manual review
-# ============================================================================
-
-def format_output(issues: List[ConsistencyIssue], file_count: int) -> ConsistencyReport:
+    # MOCK: Return empty list (no issues found)
+    return []
+ 
+ 
+def format_output(
+    issues: List[ConsistencyIssue], glossary_size: int, files_count: int
+) -> ConsistencyReport:
     """
-    Structure issues into a report (typed data).
-    
-    Output layers (will be implemented in output.py):
-      1. JSON artifact: Machine-readable, GitHub artifact upload
-      2. Markdown summary: Human-readable for review
-      3. GitHub PR annotations: Inline comments (future)
-    
+    Format consistency check results into structured report.
+ 
     Args:
-      issues: List of ConsistencyIssue from Step 3
-      file_count: Number of files checked
-    
+        issues: List of consistency issues found
+        glossary_size: Count of canonical terms
+        files_count: Count of files scanned
+ 
     Returns:
-      ConsistencyReport with:
-        - issues: full list (typed)
-        - file_count: docs checked
-        - issue_count: total issues found
-        - by_severity: breakdown of error/warning/info
+        ConsistencyReport with status, summary, and detailed findings
     """
-    
-    by_severity = {"error": 0, "warning": 0, "info": 0}
-    for issue in issues:
-        by_severity[issue.severity] += 1
-    
-    report = ConsistencyReport(
-        issues=issues,
-        file_count=file_count,
-        issue_count=len(issues),
-        by_severity=by_severity
+    status = "pass" if not issues else "fail"
+    summary = (
+        f"✓ Consistency check passed ({glossary_size} terms, {files_count} files)"
+        if status == "pass"
+        else f"✗ Consistency check failed: {len(issues)} issue(s) found"
     )
-    
-    print(f"✓ Report formatted:")
-    print(f"  {report.issue_count} issues across {report.file_count} files")
-    print(f"  Errors: {by_severity['error']}, Warnings: {by_severity['warning']}, Info: {by_severity['info']}")
-    
-    return report
-
-
+ 
+    return ConsistencyReport(
+        status=status,
+        issues_found=len(issues),
+        issues=issues,
+        glossary_terms_checked=glossary_size,
+        files_scanned=files_count,
+        summary=summary,
+    )
+ 
+ 
 # ============================================================================
-# STEP 5: MAIN ENTRY POINT - Wires all steps together
+# Main Entry Point
 # ============================================================================
-
-def main(config_path: str = "agents.yaml", groq_api_key: str = None):
+ 
+ 
+def main():
     """
-    Run the consistency checker end-to-end.
-    
-    Args:
-      config_path: Path to agents.yaml
-      groq_api_key: Groq API key (or read from env)
-    
-    Returns:
-      ConsistencyReport (typed, ready for output formatting)
-    
-    Exit codes:
-      0: Success (issues found or no issues)
-      1: Hard failure (missing config, invalid glossary, API error)
+    Orchestrate the consistency checker workflow.
+ 
+    Workflow:
+    1. Load agents.yaml (discover config and glossary path)
+    2. Load glossary.yaml (canonical terminology)
+    3. Scan documentation files
+    4. Run consistency check agent
+    5. Format and return report
+ 
+    Exit behavior:
+    - 0 if consistency check passes
+    - 1 if issues found or error occurs
     """
-    
-    print("\n" + "="*70)
-    print("CONSISTENCY CHECKER AGENT - SKELETON RUN")
-    print("="*70 + "\n")
-    
+    # Determine config paths (relative to repo root)
+    repo_root = Path(__file__).parent.parent
+    config_path = repo_root / "agents.yaml"
+    docs_root = repo_root / "docs"
+ 
+    print(f"[consistency-checker] Starting consistency check")
+    print(f"[consistency-checker] Repo root: {repo_root}")
+    print()
+ 
+    # ========================================================================
+    # Step 1: Load configuration (agents.yaml)
+    # ========================================================================
+    print("[config] Loading agents.yaml...")
     try:
-        # Step 1: Load config and glossary
-        config = load_config(config_path)
-        cc_config = config["agents"]["consistency_checker"]["config"]
-        glossary = load_glossary(cc_config["glossary_path"])
-        
-        # Step 2: Scan docs (two-pass glob + marker logic)
-        documents = scan_docs(
-            sources=config["agents"]["consistency_checker"]["sources"],
-            exclude_markers=cc_config.get("exclude_markers", [])
-        )
-        
-        # Step 3: Run agent (Groq API with structured output)
-        issues = consistency_checker_agent(documents, glossary, groq_api_key)
-        
-        # Step 4: Format output (typed report)
-        report = format_output(issues, file_count=len(documents))
-        
-        # Print summary
-        print("\n" + "="*70)
-        print("REPORT SUMMARY")
-        print("="*70)
-        print(f"Files checked:    {report.file_count}")
-        print(f"Total issues:     {report.issue_count}")
-        print(f"  Errors:         {report.by_severity['error']}")
-        print(f"  Warnings:       {report.by_severity['warning']}")
-        print(f"  Info:           {report.by_severity['info']}")
-        
-        if report.issues:
-            print("\nFirst issue (example):")
-            issue = report.issues[0]
-            print(f"  File:    {issue.filepath}:{issue.line_num}")
-            print(f"  Term:    '{issue.found}' → should be '{issue.expected}'")
-            print(f"  Context: {issue.context}")
-        
-        print("\n" + "="*70)
-        print("Output formats (to implement in output.py):")
-        print("="*70)
-        print("1. JSON artifact → GitHub Actions artifact store")
-        print("2. Markdown summary → artifact + manual review")
-        print("3. GitHub PR annotations → inline comments (future)")
-        
-        return report, 0
-        
+        config = load_config(str(config_path))
+        print(f"[config] ✓ Loaded agents.yaml")
     except FileNotFoundError as e:
-        print(f"\n✗ Error: {e}")
-        print("  Make sure agents.yaml and glossary file exist.")
-        return None, 1
+        print(f"[config] ✗ {e}", file=sys.stderr)
+        sys.exit(1)
     except ValueError as e:
-        print(f"\n✗ Error: {e}")
-        print("  Glossary validation failed.")
-        return None, 1
-
-
+        print(f"[config] ✗ Validation error: {e}", file=sys.stderr)
+        sys.exit(1)
+ 
+    # Extract glossary path from config
+    glossary_path_rel = config["agents"]["consistency_checker"]["config"]["glossary_path"]
+    glossary_path = repo_root / glossary_path_rel
+ 
+    # ========================================================================
+    # Step 2: Load glossary (reference/glossary.yaml)
+    # ========================================================================
+    print(f"[config] Loading glossary from {glossary_path_rel}...")
+    try:
+        glossary = load_glossary(str(glossary_path))
+        print(f"[config] ✓ Loaded {len(glossary)} canonical terms")
+    except FileNotFoundError as e:
+        print(f"[config] ✗ {e}", file=sys.stderr)
+        sys.exit(1)
+    except ValueError as e:
+        print(f"[config] ✗ Validation error: {e}", file=sys.stderr)
+        sys.exit(1)
+ 
+    print()
+ 
+    # ========================================================================
+    # Step 3: Scan documentation
+    # ========================================================================
+    print("[scan] Scanning documentation files...")
+    file_paths = scan_docs(str(docs_root))
+    print(f"[scan] ✓ Found {len(file_paths)} files")
+ 
+    # ========================================================================
+    # Step 4: Run consistency check agent
+    # ========================================================================
+    print("[agent] Running consistency check...")
+    issues = consistency_checker_agent(file_paths, glossary)
+    print(f"[agent] ✓ Check complete ({len(issues)} issues)")
+ 
+    # ========================================================================
+    # Step 5: Format report
+    # ========================================================================
+    print()
+    report = format_output(issues, len(glossary), len(file_paths))
+ 
+    # ========================================================================
+    # Output
+    # ========================================================================
+    print("[report]")
+    print(f"Status: {report.status.upper()}")
+    print(f"Summary: {report.summary}")
+    print(f"Glossary terms checked: {report.glossary_terms_checked}")
+    print(f"Files scanned: {report.files_scanned}")
+    print(f"Issues found: {report.issues_found}")
+ 
+    if report.issues:
+        print("\n[issues]")
+        for issue in report.issues:
+            print(f"  {issue.file_path}:{issue.line_number} - {issue.message}")
+ 
+    print()
+    print("[result]")
+    print(report.model_dump_json(indent=2))
+ 
+    # Return appropriate exit code
+    sys.exit(0 if report.status == "pass" else 1)
+ 
+ 
 if __name__ == "__main__":
-    report, exit_code = main()
-    
-    print("\n" + "="*70)
-    print("NEXT STEPS (Implementation roadmap)")
-    print("="*70)
-    print("""
-1. Create agents/config.py
-   - load_config(): Read YAML, validate structure
-   - load_glossary(): Read YAML, validate (≥3 terms, all strings)
-   
-2. Create agents/input_adapter.py (or inline in consistency_checker.py)
-   - scan_docs(): Implement glob + negation logic
-   - marker detection: Check file first line for # --no-consistency-check
-   
-3. Create agents/consistency_checker.py
-   - consistency_checker_agent(): Call Groq API with JSON schema
-   - Design prompt: Glossary terms → check document → return issues
-   
-4. Create agents/output.py
-   - to_json_artifact(): Serialize report to JSON
-   - to_markdown_summary(): Serialize report to Markdown table
-   - to_github_annotations(): Serialize to ::warning/::error format
-    """)
-    print("="*70 + "\n")
-    
-    exit(exit_code)
+    main()
+ 

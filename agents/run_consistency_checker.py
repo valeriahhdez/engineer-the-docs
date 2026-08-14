@@ -52,40 +52,11 @@ from typing import Dict, List
 # Add parent directory to path so we can import agents module
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Import config loaders, document scanning, and data models
+# Import config loaders, document scanning, candidate finding, and data models
 from agents.config import load_config, load_glossary
 from agents.scan import scan_docs
+from agents.candidate_finder import find_term_candidates
 from agents.documents import DocumentInput, ConsistencyReport, ConsistencyIssue
-
-
-# ============================================================================
-# Phase 2: Find Term Candidates (Python regex pre-scan) - SKELETON
-# ============================================================================
-
-
-def find_term_candidates(
-    documents: List[DocumentInput], 
-    glossary: Dict[str, str]
-) -> Dict[str, list]:
-    """
-    Mock: Scan documents for glossary term variants using Python regex.
-
-    Phase 2 will implement:
-    1. Case-insensitive matching (github vs GitHub)
-    2. Variant detection (REST API vs REST-API, api vs API)
-    3. Code block detection (skip terms in code)
-    4. Exact line number reporting
-    5. Candidate severity assessment
-
-    Args:
-        documents: List of DocumentInput (from scan_docs)
-        glossary: Canonical terminology dictionary
-
-    Returns:
-        Dictionary mapping file_path → list of Candidate objects
-    """
-    # MOCK: Return empty candidate dictionary
-    return {doc.file_path: [] for doc in documents}
 
 
 # ============================================================================

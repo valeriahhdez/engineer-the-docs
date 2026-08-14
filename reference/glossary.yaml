@@ -26,7 +26,7 @@ markdownlint: "markdownlint"
 Vale: "Vale"
 
 # Our project
-"Engineer the Docs": "Engineer the Docs"
+Engineer the docs: "Engineer the docs"
 documentation engineer: "documentation engineer"
 documentation engineering: "documentation engineering"
 
@@ -35,10 +35,11 @@ repository: "repository"
 repository repo: "repository (repo)"
 pull request: "pull request (PR)"
 merge: "merge"
+frontend: "frontend"
 
 # Style guidance (for consistency checker)
 # Some terms have preferred usage patterns:
 REST API: "REST API"
 GraphQL API: "GraphQL API"
 open source: "open source"
-"end-to-end": "end-to-end"
+end-to-end: "end-to-end"

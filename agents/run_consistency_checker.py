@@ -2,7 +2,7 @@
 Entry point for the consistency checker agent.
 
 ARCHITECTURE:
-  Load config → Scan docs → Run agent → Format output → Return results
+  Load config → Scan docs → Find candidates → Verify with Groq → Format output
 
 DISCOVERY and EXECUTION RULES:
 1. Markers: Agent-specific opt-outs (file-level only)
@@ -36,115 +36,106 @@ DISCOVERY and EXECUTION RULES:
    - JSON: Machine-readable, GitHub artifact upload
    - Markdown: Human-readable summary for review
    - Future: GitHub PR annotations (inline comments)
+
+PHASE ROADMAP:
+   Phase 1 (COMPLETE): scan_docs() - glob patterns + marker filtering ✓
+   Phase 2 (IN PROGRESS): find_term_candidates() - Python regex pre-scan
+   Phase 3: verify_with_groq() - LLM semantic validation
+   Phase 4: format_output() - combined results
 """
 
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
- 
-import yaml
-from pydantic import BaseModel, Field
- 
+from typing import Dict, List
+
 # Add parent directory to path so we can import agents module
 sys.path.insert(0, str(Path(__file__).parent.parent))
- 
-# Import production-ready config loaders
+
+# Import config loaders, document scanning, and data models
 from agents.config import load_config, load_glossary
- 
- 
+from agents.scan import scan_docs
+from agents.documents import DocumentInput, ConsistencyReport, ConsistencyIssue
+
+
 # ============================================================================
-# Type Definitions
+# Phase 2: Find Term Candidates (Python regex pre-scan) - SKELETON
 # ============================================================================
- 
-class ConsistencyIssue(BaseModel):
-    """Single consistency check finding."""
- 
-    file_path: str = Field(..., description="Relative path to checked file")
-    line_number: int = Field(..., description="Line where issue occurred")
-    term: str = Field(..., description="Canonical term from glossary")
-    found: str = Field(..., description="Variant found in document")
-    message: str = Field(..., description="Human-readable issue description")
- 
- 
-class ConsistencyReport(BaseModel):
-    """Structured output from consistency checker agent."""
- 
-    status: str = Field(..., description="'pass' or 'fail'")
-    issues_found: int = Field(..., description="Count of consistency violations")
-    issues: List[ConsistencyIssue] = Field(
-        default_factory=list, description="List of specific issues"
-    )
-    glossary_terms_checked: int = Field(
-        ..., description="Count of canonical terms evaluated"
-    )
-    files_scanned: int = Field(..., description="Count of documentation files")
-    summary: str = Field(..., description="Human-readable summary")
- 
- 
-# ============================================================================
-# Mock Functions (Entry Point Skeleton)
-# ============================================================================
- 
- 
-def scan_docs(docs_root: str, marker_filter: str = "") -> List[str]:
+
+
+def find_term_candidates(
+    documents: List[DocumentInput], 
+    glossary: Dict[str, str]
+) -> Dict[str, list]:
     """
-    Mock: Scan documentation files matching opt-in markers.
- 
-    This is a skeleton function. In production, it will:
-    1. Walk docs_root recursively
-    2. Filter files by marker (e.g., skip files marked `# --no-consistency-check`)
-    3. Return list of markdown file paths
- 
+    Mock: Scan documents for glossary term variants using Python regex.
+
+    Phase 2 will implement:
+    1. Case-insensitive matching (github vs GitHub)
+    2. Variant detection (REST API vs REST-API, api vs API)
+    3. Code block detection (skip terms in code)
+    4. Exact line number reporting
+    5. Candidate severity assessment
+
     Args:
-        docs_root: Root directory for documentation
-        marker_filter: Optional agent-specific marker to exclude files
- 
+        documents: List of DocumentInput (from scan_docs)
+        glossary: Canonical terminology dictionary
+
     Returns:
-        List of file paths (currently mocked)
+        Dictionary mapping file_path → list of Candidate objects
     """
-    # MOCK: Return hardcoded file paths
-    return [
-        "docs/index.md",
-        "docs/guides/setup.md",
-        "docs/guides/architecture.md",
-        "docs/reference/cli.md",
-    ]
- 
- 
-def consistency_checker_agent(
-    file_paths: List[str], glossary: Dict[str, str]
+    # MOCK: Return empty candidate dictionary
+    return {doc.file_path: [] for doc in documents}
+
+
+# ============================================================================
+# Phase 3: Verify with Groq (LLM semantic validation) - SKELETON
+# ============================================================================
+
+
+def verify_with_groq(
+    candidates_by_file: Dict[str, list],
+    glossary: Dict[str, str]
 ) -> List[ConsistencyIssue]:
     """
-    Mock: Run consistency check against canonical terminology.
- 
-    This is a skeleton function. In production, it will:
-    1. Load each file
-    2. Search for glossary terms and variants
-    3. Return issues for terminology mismatches
- 
+    Mock: Send candidate issues to Groq for severity classification.
+
+    Phase 3 will implement:
+    1. Build Groq payload (glossary + candidates only, not full docs)
+    2. Use llama-3.3-70b-versatile for instruction-following
+    3. Structured JSON output (Pydantic validation)
+    4. Graceful degradation on API failure (Option A: report as warnings)
+    5. Severity classification (error, warning, info)
+
     Args:
-        file_paths: List of markdown files to check
+        candidates_by_file: Candidate dictionary from find_term_candidates
         glossary: Canonical terminology dictionary
- 
+
     Returns:
-        List of consistency issues (currently mocked)
+        List of ConsistencyIssue (validated issues)
     """
-    # MOCK: Return empty list (no issues found)
+    # MOCK: Return empty issues list
     return []
- 
- 
+
+
+# ============================================================================
+# Format Output
+# ============================================================================
+
+
 def format_output(
-    issues: List[ConsistencyIssue], glossary_size: int, files_count: int
+    issues: List[ConsistencyIssue],
+    glossary_size: int,
+    files_count: int,
 ) -> ConsistencyReport:
     """
     Format consistency check results into structured report.
- 
+
     Args:
         issues: List of consistency issues found
         glossary_size: Count of canonical terms
         files_count: Count of files scanned
- 
+
     Returns:
         ConsistencyReport with status, summary, and detailed findings
     """
@@ -154,7 +145,7 @@ def format_output(
         if status == "pass"
         else f"✗ Consistency check failed: {len(issues)} issue(s) found"
     )
- 
+
     return ConsistencyReport(
         status=status,
         issues_found=len(issues),
@@ -163,24 +154,25 @@ def format_output(
         files_scanned=files_count,
         summary=summary,
     )
- 
- 
+
+
 # ============================================================================
 # Main Entry Point
 # ============================================================================
- 
- 
+
+
 def main():
     """
     Orchestrate the consistency checker workflow.
- 
+
     Workflow:
     1. Load agents.yaml (discover config and glossary path)
     2. Load glossary.yaml (canonical terminology)
-    3. Scan documentation files
-    4. Run consistency check agent
-    5. Format and return report
- 
+    3. Scan documentation files (Phase 1: scan_docs)
+    4. Find term candidates (Phase 2: find_term_candidates) - MOCK
+    5. Verify with Groq (Phase 3: verify_with_groq) - MOCK
+    6. Format and return report
+
     Exit behavior:
     - 0 if consistency check passes
     - 1 if issues found or error occurs
@@ -189,11 +181,11 @@ def main():
     repo_root = Path(__file__).parent.parent
     config_path = repo_root / "agents.yaml"
     docs_root = repo_root / "docs"
- 
+
     print(f"[consistency-checker] Starting consistency check")
     print(f"[consistency-checker] Repo root: {repo_root}")
     print()
- 
+
     # ========================================================================
     # Step 1: Load configuration (agents.yaml)
     # ========================================================================
@@ -207,11 +199,15 @@ def main():
     except ValueError as e:
         print(f"[config] ✗ Validation error: {e}", file=sys.stderr)
         sys.exit(1)
- 
-    # Extract glossary path from config
-    glossary_path_rel = config["agents"]["consistency_checker"]["config"]["glossary_path"]
+
+    # Extract configuration for consistency checker
+    cc_config = config["agents"]["consistency_checker"]
+    glossary_path_rel = cc_config["config"]["glossary_path"]
+    sources = cc_config.get("sources", [])
+    exclude_markers = cc_config["config"].get("exclude_markers", [])
+
     glossary_path = repo_root / glossary_path_rel
- 
+
     # ========================================================================
     # Step 2: Load glossary (reference/glossary.yaml)
     # ========================================================================
@@ -225,29 +221,53 @@ def main():
     except ValueError as e:
         print(f"[config] ✗ Validation error: {e}", file=sys.stderr)
         sys.exit(1)
- 
+
     print()
- 
+
     # ========================================================================
-    # Step 3: Scan documentation
+    # Step 3: Scan documentation (Phase 1 - COMPLETE)
     # ========================================================================
-    print("[scan] Scanning documentation files...")
-    file_paths = scan_docs(str(docs_root))
-    print(f"[scan] ✓ Found {len(file_paths)} files")
- 
-    # ========================================================================
-    # Step 4: Run consistency check agent
-    # ========================================================================
-    print("[agent] Running consistency check...")
-    issues = consistency_checker_agent(file_paths, glossary)
-    print(f"[agent] ✓ Check complete ({len(issues)} issues)")
- 
-    # ========================================================================
-    # Step 5: Format report
-    # ========================================================================
+    print("[phase-1] Scanning documentation with glob patterns and markers...")
+    try:
+        documents = scan_docs(
+            str(docs_root),
+            sources=sources,
+            exclude_markers=exclude_markers,
+        )
+        print(f"[phase-1] ✓ Scanned {len(documents)} file(s)")
+    except FileNotFoundError as e:
+        print(f"[phase-1] ✗ {e}", file=sys.stderr)
+        sys.exit(1)
+    except ValueError as e:
+        print(f"[phase-1] ✗ {e}", file=sys.stderr)
+        sys.exit(1)
+
     print()
-    report = format_output(issues, len(glossary), len(file_paths))
- 
+
+    # ========================================================================
+    # Step 4: Find term candidates (Phase 2 - SKELETON)
+    # ========================================================================
+    print("[phase-2] Finding terminology candidates with Python regex...")
+    candidates_by_file = find_term_candidates(documents, glossary)
+    total_candidates = sum(len(v) for v in candidates_by_file.values())
+    print(f"[phase-2] ✓ Found {total_candidates} candidate issue(s)")
+
+    print()
+
+    # ========================================================================
+    # Step 5: Verify with Groq (Phase 3 - SKELETON)
+    # ========================================================================
+    print("[phase-3] Verifying candidates with Groq (LLM validation)...")
+    issues = verify_with_groq(candidates_by_file, glossary)
+    print(f"[phase-3] ✓ Validation complete ({len(issues)} issue(s))")
+
+    print()
+
+    # ========================================================================
+    # Step 6: Format report
+    # ========================================================================
+    report = format_output(issues, len(glossary), len(documents))
+
     # ========================================================================
     # Output
     # ========================================================================
@@ -257,20 +277,19 @@ def main():
     print(f"Glossary terms checked: {report.glossary_terms_checked}")
     print(f"Files scanned: {report.files_scanned}")
     print(f"Issues found: {report.issues_found}")
- 
+
     if report.issues:
         print("\n[issues]")
         for issue in report.issues:
-            print(f"  {issue.file_path}:{issue.line_number} - {issue.message}")
- 
+            print(f"  {issue.file_path}:{issue.line_number} - {issue.canonical_term} (severity: {issue.severity})")
+
     print()
     print("[result]")
     print(report.model_dump_json(indent=2))
- 
+
     # Return appropriate exit code
     sys.exit(0 if report.status == "pass" else 1)
- 
- 
+
+
 if __name__ == "__main__":
     main()
- 

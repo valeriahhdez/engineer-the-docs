@@ -1,6 +1,5 @@
-# agents.yaml - Discovery & Configuration
+# agents.yaml - Discovery and Configuration
 # Single source of truth for agent orchestration
-#
 # PRINCIPLES:
 # - Explicit opt-in: only listed files are checked
 # - Negation: use ! prefix to exclude patterns

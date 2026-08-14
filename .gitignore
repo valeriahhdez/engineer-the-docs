@@ -1,6 +1,9 @@
 # Virtual environment
 .venv/
 
+# Local environment
+.env
+
 # Zensical build output
 site/
 .DS_Store

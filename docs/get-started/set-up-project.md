@@ -84,7 +84,7 @@ __pycache__/
 
 Create an empty GitHub repository. Do not add a README, license, or `.gitignore` file; your local project already contains the files required for this tutorial.
 
-1. Go to [github.com/new](https://github.com/new).
+1. Go to [GitHub](https://github.com/new).
 2. Give the repository the same name as your local folder (`YOUR_PROJECT_NAME`).
 3. Leave the **Add README** toggle off.
 4. Select **No .gitignore** and **No license** from the dropdown menus.

@@ -46,6 +46,84 @@ def is_in_code_block(lines: List[str], line_number: int) -> bool:
     return fence_count % 2 == 1
 
 
+def is_in_inline_code(text: str, position: int) -> bool:
+    """
+    Check if a position in text is inside inline code (single backticks).
+
+    Args:
+        text: Line text
+        position: Character position to check
+
+    Returns:
+        True if position is between single backticks, False otherwise
+    """
+    # Count backticks before this position
+    backtick_count = text[:position].count('`')
+    
+    # If odd number of backticks, we're inside inline code
+    return backtick_count % 2 == 1
+
+
+def is_in_markdown_link_url(text: str, position: int) -> bool:
+    """
+    Check if a position is inside a markdown link URL.
+
+    Markdown links are: [text](url)
+    This checks if position is between the parentheses.
+
+    Args:
+        text: Line text
+        position: Character position to check
+
+    Returns:
+        True if position is inside markdown link URL, False otherwise
+    """
+    # Find all markdown links: [text](url)
+    link_pattern = r'\[([^\[\]]*)\]\(([^)]*)\)'
+    
+    for match in re.finditer(link_pattern, text):
+        full_match = match.group(0)  # e.g., "[github.com/new](https://github.com/new)"
+        match_start = match.start()  # Absolute start position of the [ character
+        
+        # Find positions of ( and ) within the matched string
+        paren_open_idx = full_match.index('(')      # Relative position of (
+        paren_close_idx = full_match.rindex(')')     # Relative position of )
+        
+        # Convert to absolute positions in the original text
+        # URL starts right after ( and ends at )
+        url_start_abs = match_start + paren_open_idx + 1  # Position right after (
+        url_end_abs = match_start + paren_close_idx       # Position of )
+        
+        # Check if the given position falls within the URL section
+        if url_start_abs <= position < url_end_abs:
+            return True
+    
+    return False
+
+
+def is_code_fence_marker(text: str, position: int) -> bool:
+    """
+    Check if a position is part of a code fence marker line.
+    
+    Code fence markers are lines starting with ``` optionally followed by language.
+    Example: ```python, ```yaml, etc.
+
+    Args:
+        text: Line text
+        position: Character position to check
+
+    Returns:
+        True if line is a code fence marker, False otherwise
+    """
+    stripped = text.strip()
+    
+    # Check if line starts with triple backticks
+    if stripped.startswith('```'):
+        return True
+    
+    return False
+
+
 def normalize_term(term: str) -> str:
     """
     Normalize a term for case-insensitive comparison.
@@ -125,6 +203,11 @@ def find_term_in_line(
     """
     Find all instances of a term in a single line.
 
+    Skips false positives:
+    - Terms inside inline code (backticks)
+    - Terms inside markdown link URLs
+    - Code fence marker lines
+
     Args:
         line: Full text of line
         canonical: Canonical term from glossary
@@ -135,6 +218,10 @@ def find_term_in_line(
         List of Candidate objects for matches found
     """
     candidates = []
+
+    # Skip entire line if it's a code fence marker
+    if is_code_fence_marker(line, 0):
+        return candidates
 
     # Case-insensitive search handling multi-word terms and punctuation variants
     # Strategy: search for the term and common punctuation variants
@@ -155,9 +242,18 @@ def find_term_in_line(
             
             for match in re.finditer(pattern, line, re.IGNORECASE):
                 found_text = match.group()
+                match_position = match.start()
                 
                 # Skip if it's an exact match to canonical
                 if found_text == canonical:
+                    continue
+                
+                # Skip if term is inside inline code (backticks)
+                if is_in_inline_code(line, match_position):
+                    continue
+                
+                # Skip if term is inside markdown link URL
+                if is_in_markdown_link_url(line, match_position):
                     continue
                 
                 # Skip if we already found this variant (avoid duplicates)

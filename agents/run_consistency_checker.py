@@ -39,54 +39,28 @@ DISCOVERY and EXECUTION RULES:
 
 PHASE ROADMAP:
    Phase 1 (COMPLETE): scan_docs() - glob patterns + marker filtering ✓
-   Phase 2 (IN PROGRESS): find_term_candidates() - Python regex pre-scan
-   Phase 3: verify_with_groq() - LLM semantic validation
-   Phase 4: format_output() - combined results
+   Phase 2 (COMPLETE): find_term_candidates() - Python regex pre-scan ✓
+   Phase 3 (COMPLETE): verify_with_groq() - LLM semantic validation ✓
+   Phase 4 (COMPLETE): format_output() - combined results ✓
 """
 
 import os
 import sys
 from pathlib import Path
 from typing import Dict, List
+from dotenv import load_dotenv
+load_dotenv()  # Load .env file
 
 # Add parent directory to path so we can import agents module
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Import config loaders, document scanning, candidate finding, and data models
+# Import config loaders, document scanning, candidate finding, Groq verification, and data models
 from agents.config import load_config, load_glossary
 from agents.scan import scan_docs
 from agents.candidate_finder import find_term_candidates
-from agents.documents import DocumentInput, ConsistencyReport, ConsistencyIssue
+from agents.groq_verifier import verify_with_groq
+from agents.documents import DocumentInput, ConsistencyReport, ConsistencyIssue, Candidate
 
-
-# ============================================================================
-# Phase 3: Verify with Groq (LLM semantic validation) - SKELETON
-# ============================================================================
-
-
-def verify_with_groq(
-    candidates_by_file: Dict[str, list],
-    glossary: Dict[str, str]
-) -> List[ConsistencyIssue]:
-    """
-    Mock: Send candidate issues to Groq for severity classification.
-
-    Phase 3 will implement:
-    1. Build Groq payload (glossary + candidates only, not full docs)
-    2. Use llama-3.3-70b-versatile for instruction-following
-    3. Structured JSON output (Pydantic validation)
-    4. Graceful degradation on API failure (Option A: report as warnings)
-    5. Severity classification (error, warning, info)
-
-    Args:
-        candidates_by_file: Candidate dictionary from find_term_candidates
-        glossary: Canonical terminology dictionary
-
-    Returns:
-        List of ConsistencyIssue (validated issues)
-    """
-    # MOCK: Return empty issues list
-    return []
 
 
 # ============================================================================
@@ -216,20 +190,35 @@ def main():
     print()
 
     # ========================================================================
-    # Step 4: Find term candidates (Phase 2 - SKELETON)
+    # Step 4: Find term candidates (Phase 2 - COMPLETE)
     # ========================================================================
     print("[phase-2] Finding terminology candidates with Python regex...")
     candidates_by_file = find_term_candidates(documents, glossary)
     total_candidates = sum(len(v) for v in candidates_by_file.values())
     print(f"[phase-2] ✓ Found {total_candidates} candidate issue(s)")
 
+    # Debug: Print candidates for inspection
+    if total_candidates > 0:
+        print("\n[phase-2-debug] Candidate details:")
+        for filepath, candidates in candidates_by_file.items():
+            if candidates:
+                print(f"  {filepath}:")
+                for c in candidates:
+                    print(f"    Line {c.line_number}: '{c.canonical_term}' → '{c.found_variant}' ({c.match_type})")
+                    print(f"      Context: {c.context_snippet}")
+
     print()
 
     # ========================================================================
-    # Step 5: Verify with Groq (Phase 3 - SKELETON)
+    # Step 5: Verify with Groq (Phase 3 - COMPLETE)
     # ========================================================================
-    print("[phase-3] Verifying candidates with Groq (LLM validation)...")
-    issues = verify_with_groq(candidates_by_file, glossary)
+    # Flatten candidates from dictionary into single list
+    all_candidates: List[Candidate] = []
+    for filepath, candidates in candidates_by_file.items():
+        all_candidates.extend(candidates)
+
+    # Call Groq for severity classification
+    issues = verify_with_groq(all_candidates, glossary)
     print(f"[phase-3] ✓ Validation complete ({len(issues)} issue(s))")
 
     print()

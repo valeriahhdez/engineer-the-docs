@@ -23,6 +23,9 @@ from agents.candidate_finder import (
     find_term_in_line,
     classify_match_type,
     is_in_code_block,
+    is_in_inline_code,
+    is_in_markdown_link_url,
+    is_code_fence_marker,
     extract_context,
     summarize_candidates,
 )
@@ -240,6 +243,147 @@ def test_code_block_detection():
         return True
 
     results.test("Multiple code blocks detected correctly", test_multiple_blocks)
+
+    return results.summary()
+
+
+# ============================================================================
+# Test Cases: Inline Code Detection
+# ============================================================================
+
+
+def test_inline_code_detection():
+    """Test detection of terms inside inline code (backticks)."""
+    print("[test_candidate] Testing inline code detection")
+    print("-" * 70)
+
+    results = TestResult()
+
+    # Test 1: Term outside backticks
+    def test_outside_backticks():
+        text = "Use GitHub for version control"
+        result = is_in_inline_code(text, 4)  # Position of 'GitHub'
+        assert result is False
+        return result
+
+    results.test("Term outside backticks returns False", test_outside_backticks)
+
+    # Test 2: Term inside backticks
+    def test_inside_backticks():
+        text = "Use `github` for version control"
+        result = is_in_inline_code(text, 5)  # Position inside backticks
+        assert result is True
+        return result
+
+    results.test("Term inside backticks returns True", test_inside_backticks)
+
+    # Test 3: Multiple backticks
+    def test_multiple_backticks():
+        text = "`github` and `GitHub` in code"
+        assert is_in_inline_code(text, 1) is True   # Inside first backticks
+        assert is_in_inline_code(text, 13) is True  # Inside second backticks
+        assert is_in_inline_code(text, 25) is False # Outside backticks
+        return True
+
+    results.test("Multiple backticks handled correctly", test_multiple_backticks)
+
+    return results.summary()
+
+
+# ============================================================================
+# Test Cases: Markdown Link Detection
+# ============================================================================
+
+
+def test_markdown_link_detection():
+    """Test detection of terms inside markdown link URLs."""
+    print("[test_candidate] Testing markdown link detection")
+    print("-" * 70)
+
+    results = TestResult()
+
+    # Test 1: Term in markdown link text (should NOT skip)
+    def test_link_text():
+        text = "[GitHub](https://github.com)"
+        # Position 1 is inside "[GitHub]" text - should be flagged
+        result = is_in_markdown_link_url(text, 1)
+        assert result is False
+        return result
+
+    results.test("Term in link text is not skipped", test_link_text)
+
+    # Test 2: Term in markdown link URL (should skip)
+    def test_link_url():
+        text = "[GitHub](https://github.com)"
+        # Position in the URL part should be True (inside parens)
+        # "https://github.com" starts at position 9
+        result = is_in_markdown_link_url(text, 20)  # Position in URL
+        assert result is True
+        return result
+
+    results.test("Term in link URL is skipped", test_link_url)
+
+    # Test 3: No link in text
+    def test_no_link():
+        text = "Use GitHub for version control"
+        result = is_in_markdown_link_url(text, 4)
+        assert result is False
+        return result
+
+    results.test("Text without markdown link returns False", test_no_link)
+
+    # Test 4: Multiple links
+    def test_multiple_links():
+        text = "[GitHub](https://github.com) and [Groq](https://groq.com)"
+        assert is_in_markdown_link_url(text, 1) is False   # "GitHub" text
+        assert is_in_markdown_link_url(text, 15) is True   # In first URL
+        assert is_in_markdown_link_url(text, 40) is False  # "Groq" text
+        assert is_in_markdown_link_url(text, 50) is True   # In second URL
+        return True
+
+    results.test("Multiple markdown links handled", test_multiple_links)
+
+    return results.summary()
+
+
+# ============================================================================
+# Test Cases: Code Fence Marker Detection
+# ============================================================================
+
+
+def test_code_fence_marker_detection():
+    """Test detection of code fence marker lines."""
+    print("[test_candidate] Testing code fence marker detection")
+    print("-" * 70)
+
+    results = TestResult()
+
+    # Test 1: Code fence with language
+    def test_fence_with_language():
+        text = "```yaml"
+        result = is_code_fence_marker(text, 0)
+        assert result is True
+        return result
+
+    results.test("Code fence with language detected", test_fence_with_language)
+
+    # Test 2: Plain code fence
+    def test_plain_fence():
+        text = "```"
+        result = is_code_fence_marker(text, 0)
+        assert result is True
+        return result
+
+    results.test("Plain code fence detected", test_plain_fence)
+
+    # Test 3: Not a code fence
+    def test_not_fence():
+        text = "Some text with ```backticks"
+        result = is_code_fence_marker(text, 0)
+        assert result is False
+        return result
+
+    results.test("Non-fence line returns False", test_not_fence)
 
     return results.summary()
 
@@ -580,6 +724,9 @@ def main():
     all_passed &= test_match_type_classification()
     all_passed &= test_context_extraction()
     all_passed &= test_code_block_detection()
+    all_passed &= test_inline_code_detection()
+    all_passed &= test_markdown_link_detection()
+    all_passed &= test_code_fence_marker_detection()
     all_passed &= test_find_term_in_line()
     all_passed &= test_full_document_scanning()
     all_passed &= test_real_glossary_and_docs()

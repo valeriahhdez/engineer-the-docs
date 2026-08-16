@@ -64,7 +64,7 @@ vale docs
 
 The consistency-checker pipeline is a strict 4-phase sequence, all wired together in `agents/run_consistency_checker.py:main()`:
 
-```
+```text
 load_config/load_glossary (agents/config.py)
   → scan_docs           (agents/scan.py)        Phase 1
   → find_term_candidates (agents/candidate_finder.py)  Phase 2

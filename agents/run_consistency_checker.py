@@ -233,7 +233,9 @@ def main():
     # ========================================================================
     # Step 5: Format output (JSON + Markdown)
     # ========================================================================
-    severity_threshold = config.get("output", {}).get("severity_threshold", "info")
+    output_config = config.get("output", {})
+    severity_threshold = output_config.get("severity_threshold", "info")
+    artifact_name = output_config.get("artifact_name", "agent-qa-report")
     rendered = format_report(report, severity_threshold=severity_threshold)
 
     print("[report]")
@@ -247,6 +249,12 @@ def main():
     print()
     print("[json]")
     print(rendered["json"])
+
+    # Write artifacts to disk (CI uploads/reads these by the artifact_name
+    # configured in agents.yaml's output.artifact_name)
+    Path(f"{artifact_name}.md").write_text(rendered["markdown"] + "\n", encoding="utf-8")
+    Path(f"{artifact_name}.json").write_text(rendered["json"] + "\n", encoding="utf-8")
+    print(f"\n[output] Wrote {artifact_name}.md and {artifact_name}.json")
 
     # Return appropriate exit code
     sys.exit(0 if report.status == "pass" else 1)

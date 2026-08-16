@@ -84,4 +84,6 @@ load_config/load_glossary (agents/config.py)
 
 ## CI/CD (`.github/workflows/ci-cd.yml`)
 
-Three-job pipeline on push/PR to `main`: `lint-and-validate` (markdownlint + Vale) → `build` (`zensical build --strict`, only on the site, not the agents pipeline) → `deploy` (GitHub Pages, main-branch pushes only). The agents package is not currently wired into CI.
+Four jobs on push/PR to `main`: `lint-and-validate` (markdownlint + Vale) → `build` (`zensical build --strict`) → `agents` and `deploy` run in parallel, both only depending on `build`, so a flagged terminology issue never blocks a Pages deployment.
+
+- **`agents`** runs `agents/run_consistency_checker.py` with `continue-on-error: true` (the script exits non-zero when issues are found — that's expected, not a workflow failure). It's gated by `dorny/paths-filter` (only runs if `docs/**`, `reference/**`, or `agents/**` changed, to conserve Groq API calls) and skips gracefully on fork PRs (`GROQ_API_KEY` is withheld by GitHub for those). On a same-repo run with the secret missing, it fails fast with a clear error instead of silently no-op'ing. It posts the rendered Markdown to `$GITHUB_STEP_SUMMARY` and uploads the JSON report as a build artifact — both read from `agent-qa-report.md`/`.json`, which `run_consistency_checker.py` writes to disk using `agents.yaml`'s `output.artifact_name`. Rename `artifact_name` in `agents.yaml` and update the workflow's hardcoded filenames to match.

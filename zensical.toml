@@ -4,7 +4,8 @@ site_description = "A docs-as-code portfolio site built with Zensical"
 site_author = "Valeria Hernandez"
 docs_dir = "docs"
 site_dir = "site"
-site_url = "https://valeriahhdez.github.io/docs-engineering/"
+site_url = "https://valeriahhdez.github.io/engineer-the-docs/"
+repo_url = "https://github.com/valeriahhdez/engineer-the-docs"
 extra_css = ["assets/stylesheets/custom.css"]
 
 # Navigation

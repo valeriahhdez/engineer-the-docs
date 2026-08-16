@@ -41,7 +41,8 @@ PHASE ROADMAP:
    Phase 1 (COMPLETE): scan_docs() - glob patterns + marker filtering ✓
    Phase 2 (COMPLETE): find_term_candidates() - Python regex pre-scan ✓
    Phase 3 (COMPLETE): verify_with_groq() - LLM semantic validation ✓
-   Phase 4 (COMPLETE): format_output() - combined results ✓
+   Phase 4 (COMPLETE): format_output() - build ConsistencyReport ✓
+   Step 5 (COMPLETE): agents.output.format_report() - render JSON + Markdown ✓
 """
 
 import os
@@ -59,6 +60,7 @@ from agents.config import load_config, load_glossary
 from agents.scan import scan_docs
 from agents.candidate_finder import find_term_candidates
 from agents.groq_verifier import verify_with_groq
+from agents.output import format_report
 from agents.documents import DocumentInput, ConsistencyReport, ConsistencyIssue, Candidate
 
 
@@ -229,23 +231,22 @@ def main():
     report = format_output(issues, len(glossary), len(documents))
 
     # ========================================================================
-    # Output
+    # Step 5: Format output (JSON + Markdown)
     # ========================================================================
+    severity_threshold = config.get("output", {}).get("severity_threshold", "info")
+    rendered = format_report(report, severity_threshold=severity_threshold)
+
     print("[report]")
     print(f"Status: {report.status.upper()}")
     print(f"Summary: {report.summary}")
-    print(f"Glossary terms checked: {report.glossary_terms_checked}")
-    print(f"Files scanned: {report.files_scanned}")
-    print(f"Issues found: {report.issues_found}")
-
-    if report.issues:
-        print("\n[issues]")
-        for issue in report.issues:
-            print(f"  {issue.file_path}:{issue.line_number} - {issue.canonical_term} (severity: {issue.severity})")
 
     print()
-    print("[result]")
-    print(report.model_dump_json(indent=2))
+    print("[markdown]")
+    print(rendered["markdown"])
+
+    print()
+    print("[json]")
+    print(rendered["json"])
 
     # Return appropriate exit code
     sys.exit(0 if report.status == "pass" else 1)

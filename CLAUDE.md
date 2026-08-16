@@ -45,6 +45,7 @@ There is no pytest/unittest runner configured — each `test_*.py` file at the r
 python test-config.py            # agents.config: load_config / load_glossary
 python test_scan.py              # agents.scan: scan_docs (glob + markers)
 python test_candidate_finder.py  # agents.candidate_finder: term matching, incl. an in-memory integration fixture (no real docs read)
+python test_output.py            # agents.output: JSON/Markdown formatters, severity filtering
 ```
 
 Each file inserts the repo root onto `sys.path` itself, so run them from the repo root without extra setup.
@@ -68,7 +69,8 @@ load_config/load_glossary (agents/config.py)
   → scan_docs           (agents/scan.py)        Phase 1
   → find_term_candidates (agents/candidate_finder.py)  Phase 2
   → verify_with_groq     (agents/groq_verifier.py)     Phase 3
-  → format_output         (in run_consistency_checker.py)  Phase 4
+  → format_output         (in run_consistency_checker.py)  Phase 4 — builds the ConsistencyReport
+  → format_report          (agents/output.py)     Step 5 — renders the report as JSON/Markdown
 ```
 
 - **`agents.yaml`** at the repo root is the single source of truth for *what gets checked and how* — per-agent `enabled` flag, glob `sources` (two-pass: positive patterns collected first, then patterns prefixed `!` subtracted), and agent-specific `config` (e.g. `glossary_path`, `exclude_markers`). Only the `consistency_checker` agent is implemented; `alt_text_generator` and `seo_optimizer` are declared in the config but have no corresponding code yet.
@@ -77,24 +79,9 @@ load_config/load_glossary (agents/config.py)
 - **`agents/documents.py`** defines the Pydantic models that flow through every phase: `DocumentInput` (scanned file) → `Candidate` (regex-flagged variant, Phase 2 output) → `ConsistencyIssue` (Groq-classified severity, Phase 3 output) → `ConsistencyReport` (final Phase 4 output). All models use `strict = True`.
 - **Phase 2 matching** (`agents/candidate_finder.py`) is case-insensitive regex over glossary terms, generating punctuation/spacing variants for multi-word terms, skipping fenced code blocks (`is_in_code_block`, tracked by counting ``` fences per line), inline code spans, and markdown link URLs. It classifies each hit as `case_mismatch`, `punctuation_variant`, `abbreviation`, or `unknown` — but does not assign severity.
 - **Phase 3** (`agents/groq_verifier.py`) sends all candidates plus the glossary to Groq (`llama-3.3-70b-versatile`, structured JSON output validated by `GroqVerificationResponse`) to classify each as `error`/`warning`/`info` with reasoning. Any failure mode (missing API key, malformed/invalid JSON, API error) degrades gracefully to `_fallback_to_warnings()` rather than failing the pipeline — this is a deliberate design choice, not a bug.
-- Test files mirror this structure 1:1 (`test-config.py` ↔ `agents/config.py`, `test_scan.py` ↔ `agents/scan.py`, `test_candidate_finder.py` ↔ `agents/candidate_finder.py`) and use synthetic in-memory fixtures (`DocumentInput` objects built inline) rather than reading real files from `docs/` — file paths like `docs/guides/setup.md` appearing in test output are fixture labels, not real project files.
+- Test files mirror this structure 1:1 (`test-config.py` ↔ `agents/config.py`, `test_scan.py` ↔ `agents/scan.py`, `test_candidate_finder.py` ↔ `agents/candidate_finder.py`, `test_output.py` ↔ `agents/output.py`) and use synthetic in-memory fixtures (`DocumentInput`/`ConsistencyReport` objects built inline) rather than reading real files from `docs/` — file paths like `docs/guides/setup.md` appearing in test output are fixture labels, not real project files.
+- **`agents/output.py`** (Step 5) renders a built `ConsistencyReport` into output strings. It is a pure formatting layer — no file I/O, no config loading — via a `FORMATTERS` registry (`{"json": format_json, "markdown": format_markdown}`) dispatched through `format_report(report, formats=None, severity_threshold="info")`. Adding a new output format (the roadmap's planned GitHub PR annotations) means writing one `fn(report, severity_threshold) -> str` function and adding it to the registry — no call-site changes. `severity_threshold` (read from `agents.yaml`'s `output.severity_threshold`) filters which issues each formatter *displays*; it does not change `report.status`/`issues_found`, which always reflect the full, unfiltered issue set from Phase 3 — the report is the single source of truth, filtering is presentation-only. `run_consistency_checker.py:main()` calls `format_report()` in its Output section and prints both renderings.
 
 ## CI/CD (`.github/workflows/ci-cd.yml`)
 
 Three-job pipeline on push/PR to `main`: `lint-and-validate` (markdownlint + Vale) → `build` (`zensical build --strict`, only on the site, not the agents pipeline) → `deploy` (GitHub Pages, main-branch pushes only). The agents package is not currently wired into CI.
-
-## Step 5: Output Formatter (In Progress)
-
-The Phase 4 `format_output()` function is currently embedded in `agents/run_consistency_checker.py:main()`. 
-Step 5 extracts it into a dedicated `agents/output.py` module with two formatters:
-
-- **JSON formatter** → `ConsistencyReport.model_dump_json()` for GitHub Actions artifact upload
-- **Markdown formatter** → Human-readable summary with issues table for review
-
-The formatters should:
-1. Accept a `ConsistencyReport` (Pydantic model from Phase 3)
-2. Return formatted strings (JSON and Markdown)
-3. Include metadata: `status`, `issues_found`, `files_scanned`, `glossary_terms_checked`
-4. For Markdown: Table of issues with file, line, term, severity, reasoning
-
-Update `run_consistency_checker.py` to import and use `format_output()` from the new module.

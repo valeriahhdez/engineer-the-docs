@@ -26,7 +26,7 @@ The next tutorial uses this project to build and deploy the site with GitHub Act
       that configuration keys and command line tool commands reflect the current version.
       This tutorial is written against Zensical 0.0.43.
 
-## Before you begin
+## Prerequisites and initial set up
 
 Before you begin, make sure you have the following:
 

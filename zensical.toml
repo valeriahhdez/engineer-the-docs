@@ -59,8 +59,8 @@ features = [
     "toc.follow"
 ]
 
-[markdown_extensions]
-attr_list = true
+# Enable {: .class } / {: #id } attribute lists on block and inline elements
+[project.markdown_extensions.attr_list]
 # Enable !!! style callouts
 [project.markdown_extensions.admonition]
 # Enable collapsible callouts

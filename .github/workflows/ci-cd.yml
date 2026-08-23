@@ -170,6 +170,96 @@ jobs:
           if-no-files-found: ignore
 
   # -------------------------------------------------------------------
+  # STEP 2.5b: SEO Heading Optimizer Agent
+  # Same pattern as the consistency checker `agents` job above — runs in
+  # parallel with it and with deploy (all three only need `build`), so a
+  # flagged heading issue never blocks a Pages deployment.
+  # -------------------------------------------------------------------
+  seo_optimizer:
+    name: SEO Optimizer Agent
+    needs: build
+    runs-on: ubuntu-latest
+    continue-on-error: true # Flagged issues exit non-zero; don't fail the workflow over them
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Detect docs/reference/agents changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'reference/**'
+              - 'agents/**'
+
+      - name: Check for fork PR (secrets are withheld by GitHub)
+        id: fork-check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && \
+             [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "is_fork_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_fork_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip - no relevant changes
+        if: steps.filter.outputs.docs != 'true'
+        run: echo "No changes under docs/, reference/, or agents/ — skipping SEO optimizer to conserve Groq API calls."
+
+      - name: Skip - fork PR (GROQ_API_KEY unavailable)
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'true'
+        run: echo "Running on a pull request from a fork — GROQ_API_KEY secret is withheld by GitHub. Skipping SEO optimizer."
+
+      - name: Validate GROQ_API_KEY secret
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          if [ -z "$GROQ_API_KEY" ]; then
+            echo "::error::GROQ_API_KEY not configured in GitHub Secrets"
+            exit 1
+          fi
+
+      - name: Set up Python
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install agent dependencies
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-agents.txt
+
+      - name: Run SEO optimizer
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python agents/run_seo_optimizer.py
+
+      # Filenames match what agents/run_seo_optimizer.py hardcodes
+      # ("agent-seo-report"), distinct from the consistency checker's
+      # agents.yaml-driven "agent-qa-report" so artifact uploads don't collide.
+      - name: Post summary to job summary
+        if: always() && steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        run: |
+          if [ -f agent-seo-report.md ]; then
+            cat agent-seo-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload JSON report artifact
+        if: always() && steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-seo-report
+          path: agent-seo-report.json
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------------
   # STEP 3: Deploy to GitHub Pages
   # -------------------------------------------------------------------
   deploy:

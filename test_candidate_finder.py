@@ -141,10 +141,10 @@ def test_context_extraction():
 
     # Test 1: Context with surrounding text
     def test_context_middle():
-        text = "This is a GitHub repository example"
+        text = "This is a GitHub demo"
         context = extract_context(text, 10, 16, window=10)  # "GitHub"
         assert "GitHub" in context
-        assert "..." not in context  # No truncation needed
+        assert "..." not in context  # Window reaches both ends, no truncation
         return context
 
     results.test("Context extracted for term in middle", test_context_middle)
@@ -238,7 +238,7 @@ def test_code_block_detection():
             "After",
         ]
         assert is_in_code_block(lines, 3) is True   # In first block
-        assert is_in_code_block(lines, 4) is False  # After first block
+        assert is_in_code_block(lines, 5) is False  # After first block (line 4 is the closing fence itself)
         assert is_in_code_block(lines, 7) is True   # In second block
         return True
 
@@ -281,7 +281,7 @@ def test_inline_code_detection():
     def test_multiple_backticks():
         text = "`github` and `GitHub` in code"
         assert is_in_inline_code(text, 1) is True   # Inside first backticks
-        assert is_in_inline_code(text, 13) is True  # Inside second backticks
+        assert is_in_inline_code(text, 14) is True  # Inside second backticks (13 is the opening backtick itself)
         assert is_in_inline_code(text, 25) is False # Outside backticks
         return True
 
@@ -337,7 +337,7 @@ def test_markdown_link_detection():
         text = "[GitHub](https://github.com) and [Groq](https://groq.com)"
         assert is_in_markdown_link_url(text, 1) is False   # "GitHub" text
         assert is_in_markdown_link_url(text, 15) is True   # In first URL
-        assert is_in_markdown_link_url(text, 40) is False  # "Groq" text
+        assert is_in_markdown_link_url(text, 34) is False  # "Groq" text (40 was inside the second URL)
         assert is_in_markdown_link_url(text, 50) is True   # In second URL
         return True
 
@@ -617,6 +617,8 @@ We use GitHub Actions for CI/CD and markdownlint for quality gates.
 - **GitHub**: Version control and automation
 - **GitHub Actions**: CI/CD pipeline orchestration
 - **Groq**: AI-powered documentation QA
+
+Find the source on github, or read our rest-api reference.
 """,
             lines=[
                 "# Welcome to Engineer the Docs",
@@ -633,6 +635,8 @@ We use GitHub Actions for CI/CD and markdownlint for quality gates.
                 "- **GitHub**: Version control and automation",
                 "- **GitHub Actions**: CI/CD pipeline orchestration",
                 "- **Groq**: AI-powered documentation QA",
+                "",
+                "Find the source on github, or read our rest-api reference.",
             ]
         )
 

@@ -248,13 +248,26 @@ def test_format_report_dispatch():
 
     results = TestResult()
 
-    def test_default_formats():
+    def test_explicit_formats_list():
         report = make_report([make_issue("warning")])
-        rendered = format_report(report)
+        rendered = format_report(report, formats=["json", "markdown"])
         assert set(rendered.keys()) == {"json", "markdown"}
         return rendered
 
-    results.test("Defaults to all registered formatters", test_default_formats)
+    results.test(
+        "Renders exactly the requested formats (formats is required, no implicit 'all')",
+        test_explicit_formats_list,
+    )
+
+    def test_formats_required():
+        report = make_report([])
+        format_report(report)
+
+    results.test(
+        "Omitting formats raises (registry is shared across report types; no safe default)",
+        test_formats_required,
+        expect_exception=TypeError,
+    )
 
     def test_explicit_subset():
         report = make_report([make_issue("warning")])

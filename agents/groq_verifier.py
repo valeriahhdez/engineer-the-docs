@@ -2,7 +2,7 @@
 Phase 3: Groq API integration for LLM-based candidate verification.
 
 This module implements semantic validation of term candidates:
-1. Send candidates to Groq (llama-3.3-70b-versatile)
+1. Send candidates to Groq (openai/gpt-oss-120b)
 2. Classify severity (error, warning, info) based on context
 3. Provide reasoning for each classification
 4. Handle API failures gracefully (Option A: report as warnings)
@@ -194,7 +194,7 @@ def verify_with_groq(
 
     This function:
     1. Builds a prompt with candidates + glossary
-    2. Calls llama-3.3-70b-versatile for structured JSON output
+    2. Calls openai/gpt-oss-120b for structured JSON output
     3. Parses response into ConsistencyIssue objects
     4. Handles API failures gracefully (reports as warnings)
 
@@ -225,9 +225,9 @@ def verify_with_groq(
         user_prompt = build_groq_payload(candidates, glossary)
 
         # Call Groq API
-        print(f"[phase-3]   Calling llama-3.3-70b-versatile...")
+        print(f"[phase-3]   Calling openai/gpt-oss-120b...")
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[
                 {
                     "role": "system",

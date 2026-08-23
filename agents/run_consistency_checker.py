@@ -236,7 +236,7 @@ def main():
     output_config = config.get("output", {})
     severity_threshold = output_config.get("severity_threshold", "info")
     artifact_name = output_config.get("artifact_name", "agent-qa-report")
-    rendered = format_report(report, severity_threshold=severity_threshold)
+    rendered = format_report(report, formats=["json", "markdown"], severity_threshold=severity_threshold)
 
     print("[report]")
     print(f"Status: {report.status.upper()}")

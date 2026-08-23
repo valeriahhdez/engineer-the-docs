@@ -35,12 +35,18 @@ agents:
     
   seo_optimizer:
     enabled: true
-    description: "Scores headings for SEO and clarity"
+    description: "Validates heading hierarchy and clarity"
+    # Sources are relative to docs/ root, same two-pass glob as consistency_checker
     sources:
       - "**/*.md"
+      - "!generated/**/*.md"
     config:
-      check_hierarchy: true
-      min_heading_clarity: 40                   # Score 0-100
+      hierarchy_rules:
+        require_h1: false                       # Zensical renders frontmatter `title` as H1; body headings start at H2
+        allow_h1_skip: false                    # H1 -> H3 (skipping H2) is a violation
+        allow_h2_skip: false                    # H2 -> H4 (skipping H3) is a violation
+        max_nesting_depth: 4                     # Flag H5/H6 as excessive nesting
+      clarity_threshold: 40                     # Score 0-100; below this, Groq flags "low_clarity"
       exclude_markers:
         - "# --no-seo-check"
 

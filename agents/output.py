@@ -1,14 +1,22 @@
 """
-Step 5: Format a ConsistencyReport into output formats (JSON, Markdown).
+Step 5: Format a report (ConsistencyReport or SeoReport) into output
+formats (JSON, Markdown).
 
-This module is a pure formatting layer: it takes an already-built
-ConsistencyReport and renders it as strings. It does not read config,
-scan files, or write to disk — callers own I/O and config lookup.
+This module is a pure formatting layer: it takes an already-built report
+and renders it as strings. It does not read config, scan files, or write
+to disk — callers own I/O and config lookup.
 
 Formatters are registered in FORMATTERS so new output formats (e.g. a
-future GitHub PR annotation format) can be added without changing call
-sites: implement `fn(report, severity_threshold) -> str` and add it to
-the registry.
+future GitHub PR annotation format, or a new agent's report type) can be
+added without changing existing call sites: implement
+`fn(report, severity_threshold) -> str` and add it to the registry.
+
+The registry is shared across report types (ConsistencyReport's "json"/
+"markdown", SeoReport's "seo_json"/"seo_markdown"), so format_report()
+requires an explicit `formats` list — there is no "run every registered
+formatter" default, since a ConsistencyReport handed to a SEO formatter
+(or vice versa) would fail on the first Seo/Consistency-specific field
+access. Callers always pass the formats that match their report type.
 
 severity_threshold filters which issues are *displayed* by a formatter.
 It does not affect the report's own status/issues_found, which always
@@ -16,21 +24,22 @@ reflect the full, unfiltered set of issues Phase 3 found.
 """
 
 import json
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Union
 
-from agents.documents import ConsistencyIssue, ConsistencyReport
+from agents.documents import ConsistencyIssue, ConsistencyReport, SeoIssue, SeoReport
 
 SEVERITY_ORDER = {"info": 0, "warning": 1, "error": 2}
 
 
 def filter_by_severity(
-    issues: List[ConsistencyIssue], severity_threshold: str
-) -> List[ConsistencyIssue]:
+    issues: List[Union[ConsistencyIssue, SeoIssue]], severity_threshold: str
+) -> List[Union[ConsistencyIssue, SeoIssue]]:
     """
     Keep only issues at or above severity_threshold.
 
     Args:
-        issues: Issues to filter
+        issues: Issues to filter (ConsistencyIssue or SeoIssue — both
+            expose a `.severity` field)
         severity_threshold: Minimum severity to keep ('info', 'warning', 'error')
 
     Returns:
@@ -120,23 +129,100 @@ def format_markdown(report: ConsistencyReport, severity_threshold: str = "info")
     return "\n".join(lines)
 
 
-FORMATTERS: Dict[str, Callable[[ConsistencyReport, str], str]] = {
+def format_seo_json(report: SeoReport, severity_threshold: str = "info") -> str:
+    """
+    Render a SeoReport as JSON, for machine consumption
+    (e.g. GitHub Actions artifact upload).
+
+    Args:
+        report: Report to render
+        severity_threshold: Minimum severity to include in the 'issues' array
+
+    Returns:
+        JSON string. Top-level fields mirror SeoReport; 'issues' is
+        filtered by severity_threshold, and 'issues_shown' records how
+        many of the report's 'issues_found' survived the filter.
+    """
+    shown = filter_by_severity(report.issues, severity_threshold)
+    payload = report.model_dump()
+    payload["issues"] = [issue.model_dump() for issue in shown]
+    payload["issues_shown"] = len(shown)
+    return json.dumps(payload, indent=2)
+
+
+def format_seo_markdown(report: SeoReport, severity_threshold: str = "info") -> str:
+    """
+    Render a SeoReport as a human-readable Markdown summary, for PR
+    review / manual inspection.
+
+    Args:
+        report: Report to render
+        severity_threshold: Minimum severity to include in the issues table
+
+    Returns:
+        Markdown string with a metadata summary and an issues table
+        (omitted if no issues meet the threshold).
+    """
+    shown = filter_by_severity(report.issues, severity_threshold)
+
+    lines = [
+        f"# SEO heading check: {report.status.upper()}",
+        "",
+        report.summary,
+        "",
+        f"- Headings analyzed: {report.headings_analyzed}",
+        f"- Files scanned: {report.files_scanned}",
+        f"- Issues found: {report.issues_found} "
+        f"(showing {len(shown)} at or above '{severity_threshold}')",
+        "",
+    ]
+
+    if not shown:
+        lines.append("No issues at or above the configured severity threshold.")
+        return "\n".join(lines)
+
+    lines.append("| File | Line | Heading | Parent | Type | Severity | Reasoning | Suggested fix |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for issue in shown:
+        lines.append(
+            "| {file} | {line} | {heading} | {parent} | {issue_type} | {severity} | {reasoning} | {fix} |".format(
+                file=_escape_markdown_cell(issue.file_path),
+                line=issue.line_number,
+                heading=_escape_markdown_cell(f"H{issue.heading_level} {issue.heading_text}"),
+                parent=_escape_markdown_cell(issue.parent_heading or "—"),
+                issue_type=issue.issue_type,
+                severity=issue.severity,
+                reasoning=_escape_markdown_cell(issue.reasoning),
+                fix=_escape_markdown_cell(issue.suggested_fix),
+            )
+        )
+
+    return "\n".join(lines)
+
+
+FORMATTERS: Dict[str, Callable[[Any, str], str]] = {
     "json": format_json,
     "markdown": format_markdown,
+    "seo_json": format_seo_json,
+    "seo_markdown": format_seo_markdown,
 }
 
 
 def format_report(
-    report: ConsistencyReport,
-    formats: Optional[List[str]] = None,
+    report: Union[ConsistencyReport, SeoReport],
+    formats: List[str],
     severity_threshold: str = "info",
 ) -> Dict[str, str]:
     """
-    Render a ConsistencyReport with one or more registered formatters.
+    Render a report with one or more registered formatters.
 
     Args:
-        report: Report to render
-        formats: Formatter names to run (defaults to every registered formatter)
+        report: Report to render (ConsistencyReport or SeoReport)
+        formats: Formatter names to run — must match the report type
+            (e.g. ["json", "markdown"] for a ConsistencyReport,
+            ["seo_json", "seo_markdown"] for a SeoReport). Required: the
+            registry holds formatters for multiple report types, so
+            there's no safe "run everything" default.
         severity_threshold: Minimum severity to include ('info', 'warning', 'error')
 
     Returns:
@@ -145,9 +231,6 @@ def format_report(
     Raises:
         ValueError: If a requested formatter name isn't registered.
     """
-    if formats is None:
-        formats = list(FORMATTERS.keys())
-
     unknown = [name for name in formats if name not in FORMATTERS]
     if unknown:
         raise ValueError(

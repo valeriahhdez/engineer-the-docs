@@ -186,8 +186,12 @@ def classify_match_type(canonical: str, found: str) -> str:
         return "punctuation_variant"
 
     # Check if found is abbreviation of canonical
-    # (e.g., "api" of "API", "pr" of "pull request")
+    # (e.g., "api" of "API" — substring; "pr" of "pull request" — initialism)
     if found_lower in can_lower or found_lower == can_clean:
+        return "abbreviation"
+
+    initials = "".join(word[0] for word in can_lower.split() if word)
+    if len(initials) > 1 and found_lower == initials:
         return "abbreviation"
 
     # Doesn't fit known patterns

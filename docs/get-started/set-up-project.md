@@ -2,6 +2,7 @@
 title : "Set up a docs-as-code project with Zensical"
 ---
 
+
 A docs-as-code project uses source files, version control, dependency management, configuration, and automation in the same way as a software project. This tutorial uses Markdown source files and Zensical to create a documentation site.
 
 This tutorial shows you how to set up a documentation site using [Zensical](https://zensical.org), a static site generator (SSG). Zensical is the successor project to Material for MkDocs and is built by the same team.
@@ -194,15 +195,15 @@ nav = [
 ]
 ```
 
-#### The `site_url` setting
+#### Add a value to `site_url`
 
 Set `site_url` to the URL where you plan to publish the site. For a GitHub Pages project site, the URL typically follows this pattern: `https://YOUR-USERNAME.github.io/YOUR_PROJECT_NAME/`. Check the [Zensical documentation](https://zensical.org/docs/setup/basics/) for the effects of omitting this setting in your target release.
 
-#### Explicit navigation
+#### Configure explicit navigation menu
 
 By default, Zensical infers navigation from the folder structure. Define `nav` explicitly in `zensical.toml` to specify which pages appear in the navigation, their order, and their labels. This lets you organize navigation according to your information architecture instead of relying on the file system.
 
-#### Theme configuration
+#### Set up theme options
 
 Zensical provides the `modern` theme by default and a `classic` variant for Material for MkDocs compatibility. The following configuration enables optional navigation features:
 
@@ -232,7 +233,7 @@ For a feature reference and theme-selection guidance, see the [Zensical document
 
 The scaffold created by `zensical new` includes a `docs/` directory. Use a consistent structure before you add more content.
 
-### Project structure
+### Structure the documentation project folder hierarchy
 
 ```text
 engineer-the-docs/
@@ -254,7 +255,7 @@ engineer-the-docs/
 └─ zensical.toml
 ```
 
-### File naming conventions
+### Define file naming conventions
 
 Consider using the following conventions:
 

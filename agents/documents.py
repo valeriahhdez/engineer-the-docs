@@ -125,6 +125,15 @@ class HeadingNode(BaseModel):
         default=None,
         description="Text of the nearest preceding heading with a lower level, if any"
     )
+    ancestors: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Full ancestor chain (outermost first), e.g. ['Database Architecture', "
+            "'Performance Tuning'] for a heading nested two levels deep. Empty for "
+            "top-level headings. Superset of parent_heading (its last element), "
+            "added for multi-level breadcrumbs (alt text agent)."
+        )
+    )
 
     class Config:
         strict = True
@@ -177,6 +186,70 @@ class SeoReport(BaseModel):
     issues_found: int = Field(..., description="Count of SEO issues")
     issues: List[SeoIssue] = Field(default_factory=list, description="List of specific issues")
     headings_analyzed: int = Field(..., description="Count of headings evaluated")
+    files_scanned: int = Field(..., description="Count of documentation files")
+    summary: str = Field(..., description="Human-readable summary")
+
+    class Config:
+        strict = True
+
+
+class AltTextCandidate(BaseModel):
+    """
+    Represents an image classified as needing generated alt text (Phase 2
+    output, before Groq verification). Not in ALT_TEXT_ARCHITECTURE.md's
+    "shape only" list — added to bridge Phase 2 -> Phase 3, mirroring
+    Candidate (consistency checker) and SeoHierarchyIssue (SEO optimizer).
+    """
+
+    file_path: str = Field(..., description="Relative path to the markdown file")
+    image_path: str = Field(..., description="Image path, normalized relative to docs/ root")
+    image_abs_path: str = Field(..., description="Absolute filesystem path to the image file")
+    line_number: int = Field(..., description="1-indexed line number of the image reference")
+    alt_text_raw: str = Field(..., description="Alt text as currently written (placeholder or empty)")
+    heading_breadcrumb: str = Field(
+        default="", description="e.g. 'Database Architecture > Performance Tuning'"
+    )
+    context_text: str = Field(
+        default="", description="Section-bounded, noise-stripped prose surrounding the image"
+    )
+
+    class Config:
+        strict = True
+
+
+class AltTextIssue(BaseModel):
+    """
+    Represents a flagged alt-text issue: either a generated suggestion
+    (source='vision' or 'context_fallback') or a broken image reference
+    (source='broken_reference', suggested_alt left empty — see
+    ALT_TEXT_ARCHITECTURE.md's "separate issue type" for broken refs).
+    """
+
+    file_path: str = Field(..., description="Relative path to the markdown file")
+    image_path: str = Field(..., description="Image path, normalized relative to docs/ root")
+    line_number: int = Field(..., description="1-indexed line number of the image reference")
+    heading_breadcrumb: str = Field(
+        default="", description="e.g. 'Database Architecture > Performance Tuning'"
+    )
+    suggested_alt: str = Field(default="", description="Generated alt text; empty for broken_reference")
+    source: str = Field(..., description="'vision', 'context_fallback', or 'broken_reference'")
+
+    class Config:
+        strict = True
+
+
+class AltTextReport(BaseModel):
+    """
+    Structured output from the alt text generator agent. Not in
+    ALT_TEXT_ARCHITECTURE.md's "shape only" list (which only specifies
+    AltTextIssue) — added to match every other agent's Report wrapper
+    (ConsistencyReport, SeoReport), consumed the same way by Phase 4/5.
+    """
+
+    status: str = Field(..., description="'pass' or 'fail'")
+    issues_found: int = Field(..., description="Count of alt-text issues (suggestions + broken refs)")
+    issues: List[AltTextIssue] = Field(default_factory=list, description="List of specific issues")
+    images_scanned: int = Field(..., description="Count of images discovered across all files")
     files_scanned: int = Field(..., description="Count of documentation files")
     summary: str = Field(..., description="Human-readable summary")
 

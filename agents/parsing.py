@@ -1,5 +1,7 @@
 """
-Heading extraction utility, shared by SEO-oriented agents.
+Heading extraction utility, shared across agents that need markdown
+structure: the SEO optimizer (hierarchy) and the alt text generator
+(section-bounded context, breadcrumbs).
 
 Parses ATX-style Markdown headings (`#` through `######`) with hierarchy
 context (parent heading tracking) and skips headings that appear inside
@@ -15,9 +17,13 @@ from agents.documents import HeadingNode
 _ATX_HEADING = re.compile(r'^(#{1,6})\s+(.+?)\s*#*\s*$')
 
 
-def _is_in_code_block(lines: List[str], line_number: int) -> bool:
+def is_in_code_block(lines: List[str], line_number: int) -> bool:
     """
     Check if a line is inside a multiline code block (``` ... ```).
+
+    Public (not agent-specific): used by parse_headings_from_markdown here
+    and by agents/alt_text_finder.py to skip image references inside code
+    fences, so image detection doesn't reimplement fence-counting.
 
     Args:
         lines: Full list of lines from document (0-indexed)
@@ -62,7 +68,7 @@ def parse_headings_from_markdown(content: str) -> List[HeadingNode]:
     for line_idx, line in enumerate(lines):
         line_number = line_idx + 1
 
-        if _is_in_code_block(lines, line_number):
+        if is_in_code_block(lines, line_number):
             continue
 
         match = _ATX_HEADING.match(line)
@@ -72,18 +78,21 @@ def parse_headings_from_markdown(content: str) -> List[HeadingNode]:
         level = len(match.group(1))
         text = match.group(2).strip()
 
-        # Pop ancestors at the same level or deeper; the remaining top of
-        # stack is the nearest enclosing heading with a lower level.
+        # Pop ancestors at the same level or deeper; the remaining stack is
+        # the full ancestor chain (outermost first), top-of-stack is the
+        # nearest enclosing heading with a lower level.
         while ancestor_stack and ancestor_stack[-1].level >= level:
             ancestor_stack.pop()
 
-        parent_heading = ancestor_stack[-1].text if ancestor_stack else None
+        ancestors = [h.text for h in ancestor_stack]
+        parent_heading = ancestors[-1] if ancestors else None
 
         node = HeadingNode(
             level=level,
             text=text,
             line_number=line_number,
             parent_heading=parent_heading,
+            ancestors=ancestors,
         )
         headings.append(node)
         ancestor_stack.append(node)

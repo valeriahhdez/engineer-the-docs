@@ -22,16 +22,16 @@ agents:
     
   alt_text_generator:
     enabled: true
-    description: "Generates alt text for images"
+    description: "Generates alt text for images missing it"
+    # Sources are relative to docs/ root, same two-pass glob as the other agents
     sources:
       - "**/*.md"
     config:
-      image_folders:
-        - "../assets"
-      min_image_width: 200                      # Only process images > 200px (avoid icons, bafges, and UI micro assets)
-      skip_formats: ["svg"]                     # SVGs often have built-in alt
+      decorative_paths:              # empty-alt images under these globs are treated as decorative, skipped
+        - "assets/icons/**"
       exclude_markers:
         - "# --no-alt-text"
+      context_word_cap: 200          # section-bounded context trimmed to this length
     
   seo_optimizer:
     enabled: true

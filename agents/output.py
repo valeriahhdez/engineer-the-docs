@@ -26,7 +26,13 @@ reflect the full, unfiltered set of issues Phase 3 found.
 import json
 from typing import Any, Callable, Dict, List, Union
 
-from agents.documents import ConsistencyIssue, ConsistencyReport, SeoIssue, SeoReport
+from agents.documents import (
+    AltTextReport,
+    ConsistencyIssue,
+    ConsistencyReport,
+    SeoIssue,
+    SeoReport,
+)
 
 SEVERITY_ORDER = {"info": 0, "warning": 1, "error": 2}
 
@@ -200,16 +206,86 @@ def format_seo_markdown(report: SeoReport, severity_threshold: str = "info") -> 
     return "\n".join(lines)
 
 
+def format_alt_text_json(report: AltTextReport, severity_threshold: str = "info") -> str:
+    """
+    Render an AltTextReport as JSON, for machine consumption
+    (e.g. GitHub Actions artifact upload).
+
+    Args:
+        report: Report to render
+        severity_threshold: Accepted for FORMATTERS registry signature
+            compatibility only — AltTextIssue has no severity concept
+            (it's a generated suggestion or a broken-reference flag, not
+            a graded violation), so this has no filtering effect here.
+
+    Returns:
+        JSON string. Top-level fields mirror AltTextReport; 'issues' is
+        the full, unfiltered list.
+    """
+    payload = report.model_dump()
+    payload["issues_shown"] = len(report.issues)
+    return json.dumps(payload, indent=2)
+
+
+def format_alt_text_markdown(report: AltTextReport, severity_threshold: str = "info") -> str:
+    """
+    Render an AltTextReport as a human-readable Markdown summary, for PR
+    review / manual acceptance of suggested alt text.
+
+    Args:
+        report: Report to render
+        severity_threshold: Accepted for FORMATTERS registry signature
+            compatibility only — see format_alt_text_json.
+
+    Returns:
+        Markdown string with a metadata summary and an issues table
+        (omitted if there are no issues).
+    """
+    lines = [
+        f"# Alt text check: {report.status.upper()}",
+        "",
+        report.summary,
+        "",
+        f"- Images scanned: {report.images_scanned}",
+        f"- Files scanned: {report.files_scanned}",
+        f"- Issues found: {report.issues_found}",
+        "",
+    ]
+
+    if not report.issues:
+        lines.append("No missing or broken alt text found.")
+        return "\n".join(lines)
+
+    lines.append("| File | Line | Image | Heading | Source | Suggested alt |")
+    lines.append("|---|---|---|---|---|---|")
+    for issue in report.issues:
+        suggested = issue.suggested_alt if issue.source != "broken_reference" else "**BROKEN REFERENCE**"
+        lines.append(
+            "| {file} | {line} | {image} | {heading} | {source} | {suggested} |".format(
+                file=_escape_markdown_cell(issue.file_path),
+                line=issue.line_number,
+                image=_escape_markdown_cell(issue.image_path),
+                heading=_escape_markdown_cell(issue.heading_breadcrumb or "—"),
+                source=issue.source,
+                suggested=_escape_markdown_cell(suggested),
+            )
+        )
+
+    return "\n".join(lines)
+
+
 FORMATTERS: Dict[str, Callable[[Any, str], str]] = {
     "json": format_json,
     "markdown": format_markdown,
     "seo_json": format_seo_json,
     "seo_markdown": format_seo_markdown,
+    "alt_text_json": format_alt_text_json,
+    "alt_text_markdown": format_alt_text_markdown,
 }
 
 
 def format_report(
-    report: Union[ConsistencyReport, SeoReport],
+    report: Union[ConsistencyReport, SeoReport, AltTextReport],
     formats: List[str],
     severity_threshold: str = "info",
 ) -> Dict[str, str]:
@@ -217,12 +293,13 @@ def format_report(
     Render a report with one or more registered formatters.
 
     Args:
-        report: Report to render (ConsistencyReport or SeoReport)
+        report: Report to render (ConsistencyReport, SeoReport, or AltTextReport)
         formats: Formatter names to run — must match the report type
             (e.g. ["json", "markdown"] for a ConsistencyReport,
-            ["seo_json", "seo_markdown"] for a SeoReport). Required: the
-            registry holds formatters for multiple report types, so
-            there's no safe "run everything" default.
+            ["seo_json", "seo_markdown"] for a SeoReport,
+            ["alt_text_json", "alt_text_markdown"] for an AltTextReport).
+            Required: the registry holds formatters for multiple report
+            types, so there's no safe "run everything" default.
         severity_threshold: Minimum severity to include ('info', 'warning', 'error')
 
     Returns:

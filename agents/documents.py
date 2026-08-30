@@ -232,6 +232,12 @@ class AltTextIssue(BaseModel):
         default="", description="e.g. 'Database Architecture > Performance Tuning'"
     )
     suggested_alt: str = Field(default="", description="Generated alt text; empty for broken_reference")
+    confidence: str = Field(
+        default="", description="'high' or 'low'; empty for broken_reference (no suggestion was made)"
+    )
+    reasoning: str = Field(
+        default="", description="Brief explanation of the description and confidence level; empty for broken_reference"
+    )
     source: str = Field(..., description="'vision', 'context_fallback', or 'broken_reference'")
 
     class Config:

@@ -260,6 +260,98 @@ jobs:
           if-no-files-found: ignore
 
   # -------------------------------------------------------------------
+  # STEP 2.5c: Alt Text Generator Agent
+  # Same pattern as the consistency checker and SEO optimizer jobs above —
+  # runs in parallel with both and with deploy (all four only need
+  # `build`), so a flagged/generated alt-text suggestion never blocks a
+  # Pages deployment. Report-only: no auto-fix, manual review of the
+  # Markdown/JSON artifact, same as the other two agents.
+  # -------------------------------------------------------------------
+  alt_text_generator:
+    name: Alt Text Generator Agent
+    needs: build
+    runs-on: ubuntu-latest
+    continue-on-error: true # Flagged issues exit non-zero; don't fail the workflow over them
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Detect docs/reference/agents changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'reference/**'
+              - 'agents/**'
+
+      - name: Check for fork PR (secrets are withheld by GitHub)
+        id: fork-check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && \
+             [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "is_fork_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_fork_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip - no relevant changes
+        if: steps.filter.outputs.docs != 'true'
+        run: echo "No changes under docs/, reference/, or agents/ — skipping alt text generator to conserve Groq API calls."
+
+      - name: Skip - fork PR (GROQ_API_KEY unavailable)
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'true'
+        run: echo "Running on a pull request from a fork — GROQ_API_KEY secret is withheld by GitHub. Skipping alt text generator."
+
+      - name: Validate GROQ_API_KEY secret
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          if [ -z "$GROQ_API_KEY" ]; then
+            echo "::error::GROQ_API_KEY not configured in GitHub Secrets"
+            exit 1
+          fi
+
+      - name: Set up Python
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install agent dependencies
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-agents.txt
+
+      - name: Run alt text generator
+        if: steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python agents/run_alt_text_generator.py
+
+      # Filenames match what agents/run_alt_text_generator.py hardcodes
+      # ("agent-alt-text-report"), distinct from the other two agents'
+      # artifact names so uploads don't collide.
+      - name: Post summary to job summary
+        if: always() && steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        run: |
+          if [ -f agent-alt-text-report.md ]; then
+            cat agent-alt-text-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload JSON report artifact
+        if: always() && steps.filter.outputs.docs == 'true' && steps.fork-check.outputs.is_fork_pr == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-alt-text-report
+          path: agent-alt-text-report.json
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------------
   # STEP 3: Deploy to GitHub Pages
   # -------------------------------------------------------------------
   deploy:

@@ -572,13 +572,20 @@ def test_vision_and_fallback():
             image_path = f.name
         try:
             candidate = make_candidate(image_abs_path=image_path)
-            fake_client = FakeGroqClient([json.dumps({"suggested_alt": "A pipeline diagram"})])
+            fake_client = FakeGroqClient([json.dumps({
+                "suggested_alt": "A pipeline diagram",
+                "confidence": "high",
+                "reasoning": "The image clearly shows labeled pipeline stages.",
+            })])
             with patch("agents.alt_text_verifier.get_groq_client", return_value=fake_client):
                 issue = generate_alt_text(candidate)
             assert issue.source == "vision"
             assert issue.suggested_alt == "A pipeline diagram"
+            assert issue.confidence == "high"
+            assert issue.reasoning == "The image clearly shows labeled pipeline stages."
             assert len(fake_client.calls) == 1
             assert fake_client.calls[0]["model"] == "qwen/qwen3.6-27b"
+            assert fake_client.calls[0]["response_format"]["type"] == "json_schema"
             return issue
         finally:
             Path(image_path).unlink()
@@ -593,14 +600,21 @@ def test_vision_and_fallback():
             candidate = make_candidate(image_abs_path=image_path)
             fake_client = FakeGroqClient([
                 RuntimeError("model unavailable"),  # vision call fails
-                json.dumps({"suggested_alt": "Likely a pipeline diagram"}),  # fallback succeeds
+                json.dumps({
+                    "suggested_alt": "Likely a pipeline diagram",
+                    "confidence": "low",
+                    "reasoning": "Inferred from surrounding text only, no image access.",
+                }),  # fallback succeeds
             ])
             with patch("agents.alt_text_verifier.get_groq_client", return_value=fake_client):
                 issue = generate_alt_text(candidate)
             assert issue.source == "context_fallback"
             assert issue.suggested_alt == "Likely a pipeline diagram"
+            assert issue.confidence == "low"
+            assert issue.reasoning == "Inferred from surrounding text only, no image access."
             assert len(fake_client.calls) == 2
             assert fake_client.calls[1]["model"] == "openai/gpt-oss-120b"
+            assert fake_client.calls[1]["response_format"]["type"] == "json_schema"
             return issue
         finally:
             Path(image_path).unlink()
@@ -625,6 +639,8 @@ def test_vision_and_fallback():
                 issue = generate_alt_text(candidate)
             assert issue.source == "context_fallback"  # still the 2-value enum, not a 3rd type
             assert issue.suggested_alt == _heuristic_alt_text(candidate)
+            assert issue.confidence == "low"
+            assert "No LLM available" in issue.reasoning
             assert len(fake_client.calls) == 2
             return issue
         finally:
@@ -637,7 +653,11 @@ def test_vision_and_fallback():
 
     def test_unsupported_format_skips_vision_entirely():
         candidate = make_candidate(image_abs_path="/nonexistent/icon.svg")
-        fake_client = FakeGroqClient([json.dumps({"suggested_alt": "A star icon"})])
+        fake_client = FakeGroqClient([json.dumps({
+            "suggested_alt": "A star icon",
+            "confidence": "low",
+            "reasoning": "Inferred from filename only.",
+        })])
         with patch("agents.alt_text_verifier.get_groq_client", return_value=fake_client):
             issue = generate_alt_text(candidate)
         assert issue.source == "context_fallback"

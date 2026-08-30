@@ -256,18 +256,20 @@ def format_alt_text_markdown(report: AltTextReport, severity_threshold: str = "i
         lines.append("No missing or broken alt text found.")
         return "\n".join(lines)
 
-    lines.append("| File | Line | Image | Heading | Source | Suggested alt |")
-    lines.append("|---|---|---|---|---|---|")
+    lines.append("| File | Line | Image | Heading | Source | Confidence | Suggested alt | Reasoning |")
+    lines.append("|---|---|---|---|---|---|---|---|")
     for issue in report.issues:
         suggested = issue.suggested_alt if issue.source != "broken_reference" else "**BROKEN REFERENCE**"
         lines.append(
-            "| {file} | {line} | {image} | {heading} | {source} | {suggested} |".format(
+            "| {file} | {line} | {image} | {heading} | {source} | {confidence} | {suggested} | {reasoning} |".format(
                 file=_escape_markdown_cell(issue.file_path),
                 line=issue.line_number,
                 image=_escape_markdown_cell(issue.image_path),
                 heading=_escape_markdown_cell(issue.heading_breadcrumb or "—"),
                 source=issue.source,
+                confidence=issue.confidence or "—",
                 suggested=_escape_markdown_cell(suggested),
+                reasoning=_escape_markdown_cell(issue.reasoning or "—"),
             )
         )
 

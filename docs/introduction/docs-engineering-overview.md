@@ -53,7 +53,7 @@ An organization can adopt docs as code without a dedicated docs engineer —writ
 
 A docs engineer, by contrast, always works within a DocOps frame. You cannot meaningfully own a documentation platform without thinking in terms of pipelines and quality gates. The role presupposes the practice.
 
-![docs-engineering-overview.png](../assets/images/docs-engineering-overview.png){: .rounded }
+![Three nested rounded rectangles illustrating a hierarchy. The outermost white layer is labeled 'DaC: The methodology' with a document icon. It contains a teal layer labeled 'DocOps: The practice' with a gear icon. This, in turn, contains a dark blue layer labeled 'Docs engineering: The role' with a terminal icon.](../assets/images/docs-engineering-overview.png){: .rounded }
 
 ## What this looks like in practice
 

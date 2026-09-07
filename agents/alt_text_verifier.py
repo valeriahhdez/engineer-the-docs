@@ -48,19 +48,31 @@ _SUPPORTED_VISION_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 
 VISION_SYSTEM_PROMPT = """You are a technical documentation accessibility auditor, specialized in WCAG 2.1 Criterion 1.1.1 (Non-Text Content).
 
+  
+
 Your job: write concise, accurate alt text for an image within a technical documentation page. The alt text should be WCAG 1.1.1-compliant and grounded in
+
 the visual content of the image and surrounding context.
+ 
 
 Rules:
+
 - Focus on function and meaning: Describe the visual information, structural relationships (e.g., nested components, directional arrows, UI states), or text contained in the image.
 - Forbidden prefixes: Never start with "Image of", "Screenshot of", "Diagram showing", or similar metadata phrases. Start directly with the description.
-- Be concise: one sentence maximum 150 characters.
 - Context grounding: Use the heading breadcrumb and surrounding prose for topical framing
-  (what the reader is trying to learn), not as a substitute for looking
-  at the image itself.
-- Do not invent details that aren't visible in the image.
-
+(what the reader is trying to learn), not as a substitute for looking
+at the image itself.
+- Be accurate: Do not invent details that aren't visible in the image.
+- Report confidence: 'low' if the image is blurry, ambiguous, generic, or contains illegible text; 'high' otherwise.
+- Reasoning: Name the specific visual detail that led to this description
+and confidence level. Do not restate suggested_alt in different words —
+that's not reasoning, it's a paraphrase.
+- Length and content: Length scales with what the image actually contains, not a fixed count.
+Name the components you can identify and describe the relationships you can trace trace without hesitation. If a specific relationship is ambiguous, omit it rather than guess.
+Prioritize naming components and relationships over describing visual styling (colors, line weights, shapes) unless the styling itself carries meaning (for example, a status color-code).
+A listener should be able to form an accurate mental picture of what this image conveys in this context from your description alone.
 Output strictly valid JSON. No preamble, no markdown, no code blocks.
+
 """
 
 CONTEXT_ONLY_SYSTEM_PROMPT = """You are a technical documentation accessibility auditor, specialized in WCAG 2.1 Criterion 1.1.1 (Non-Text Content).
@@ -71,10 +83,16 @@ You are operating in **CONTEXT-ONLY FALLBACK MODE** because the primary vision p
 
 Rules:
 - Focus on function, not visuals: Describe the conceptual purpose of the image within the section. Do NOT guess colors, visual layouts, component counts, or specific UI elements you cannot see.
-- Conservative language: Use structural, purpose-driven phrases such as "Conceptual diagram of...", "Illustration supporting...", or "Architecture overview for...".
+- Conservative language: Use structural, purpose-driven phrases. For example, use "database replication with a primary node and two replica nodes" rather than "conceptual diagram of database replication." 
 - Forbidden prefixes: Do NOT start with "Image of", "Screenshot of", or "Photo of".
 - Forbidden speculation: Do NOT invent labels, arrows, or step-by-step flows that are not explicitly stated in the surrounding prose.
-- Conciseness: Limit the response to 1 concise sentence (under 150 characters).
+- Report confidence: 'high' only if the surrounding prose explicitly and specifically describes the image's visual content (names labeled elements, layout, or a specific sequence).
+'low' if you are inferring the image's likely content from general topical context without an explicit description.
+- Reasoning: name the specific surrounding text that led to this description and confidence level. Do not restate suggested_alt in different words, that's not reasoning, it's a paraphrase.
+- Length and content: Length and content are bounded by what the surrounding text explicitly supports, not by how visually complex the image might be, which you cannot assess. 
+Default to one sentence describing the image's conceptual purpose within this section. Extend to two sentences only if the text explicitly names multiple distinct elements the image depicts.
+In that case, name only the elements the text actually states, and do not describe how they relate to each other unless the text explicitly says so too. If the text implies structure, layout, or relationships it doesn't spell out, do not infer them.
+Fall back to describing the image's general purpose rather than a specific structure you can't verify. An accurate but shallow description is always preferable to a detailed but speculative one.
 
 Output ONLY valid JSON. No preamble, no markdown, no code blocks.
 """
@@ -108,7 +126,7 @@ RESPONSE_SCHEMA = {
                 "confidence": {
                     "type": "string",
                     "enum": ["high", "low"],
-                    "description": "How confident the model is in this description",
+                    "description": "One sentence citing the specific evidence — visual or textual — behind suggested_alt and confidence. Not a restatement of suggested_alt.",
                 },
                 "reasoning": {
                     "type": "string",
